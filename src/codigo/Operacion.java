@@ -8,6 +8,6 @@ package codigo;
  *
  * @author vicen
  */
-public class Operacion {
+public abstract class Operacion {
     
 }
