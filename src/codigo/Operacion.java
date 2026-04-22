@@ -11,8 +11,8 @@ import java.io.IOException;
  * @author vicen
  */
 public abstract class Operacion {
-    public abstract void sumar() throws Exception;
-    public abstract void restar() throws Exception;
-    public abstract void multiplicar() throws Exception;
-    public abstract void dividir() throws Exception;
+    public abstract Number sumar(Number a, Number b) throws Exception;
+    public abstract Number restar(Number a, Number b) throws Exception;
+    public abstract Number multiplicar(Number a, Number b) throws Exception;
+    public abstract Number dividir(Number a, Number b) throws Exception;
 }
