@@ -51,25 +51,25 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     resultado += "  #Comillas#\t\t" + lexer.lexeme + "\n";
                     break;
                 case Cadena:
-                    resultado += "  #Tipo de dato#\t" + lexer.lexeme + "\n";
+                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
                     break;
                 case Reservado:
-                    resultado += "  #Tipo de dato#\t" + lexer.lexeme + "\n";
+                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
                     break;
                 case If:
-                    resultado += "  #Reservada if#\t" + lexer.lexeme + "\n";
+                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
                     break;
                 case Else:
-                    resultado += "  #Reservada else#\t" + lexer.lexeme + "\n";
+                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
                     break;
                 case Do:
-                    resultado += "  #Reservada do#\t" + lexer.lexeme + "\n";
+                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
                     break;
                 case While:
-                    resultado += "  #Reservada while#\t" + lexer.lexeme + "\n";
+                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
                     break;
                 case For:
-                    resultado += "  #Reservada For#\t" + lexer.lexeme + "\n";
+                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
                     break;
                 case Igual:
                     resultado += "  #Operador de asignación#\t" + lexer.lexeme + "\n";
@@ -129,7 +129,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     resultado += "  #Identificador#\t\t" + lexer.lexeme + "\n";
                     break;
                 case Numero:
-                    resultado += "  #Numero#\t\t" + lexer.lexeme + "\n";
+                    resultado += "  #Constante#\t\t" + lexer.lexeme + "\n";
                     break;
                 case ERROR:
                     resultado += "  #Simbolo no definido#\n";
