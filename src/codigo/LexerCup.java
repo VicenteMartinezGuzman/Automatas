@@ -9,7 +9,7 @@ import java_cup.runtime.Symbol;
  * on 20/04/26, 6:36 a.m. from the specification file
  * <tt>C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/codigo/LexerCup.flex</tt>
  */
-class LexerCup implements java_cup.runtime.Scanner {
+public class LexerCup implements java_cup.runtime.Scanner {
 
   /** This character denotes the end of file */
   public static final int YYEOF = -1;
@@ -320,7 +320,7 @@ class LexerCup implements java_cup.runtime.Scanner {
    *
    * @param   in  the java.io.Reader to read input from.
    */
-  LexerCup(java.io.Reader in) {
+  public LexerCup(java.io.Reader in) {
     this.zzReader = in;
   }
 
@@ -330,7 +330,7 @@ class LexerCup implements java_cup.runtime.Scanner {
    *
    * @param   in  the java.io.Inputstream to read input from.
    */
-  LexerCup(java.io.InputStream in) {
+  public LexerCup(java.io.InputStream in) {
     this(new java.io.InputStreamReader(in));
   }
 

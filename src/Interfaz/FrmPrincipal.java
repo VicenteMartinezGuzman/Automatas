@@ -3,8 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package codigo;
+package Interfaz;
 
+import codigo.Lexer;
+import codigo.Sintax;
+import codigo.Tokens;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,7 +24,7 @@ import javax.swing.JFileChooser;
  * @author Charly Ponce
  */
 public class FrmPrincipal extends javax.swing.JFrame {
-
+    
     /**
      * Creates new form FrmPrincipal
      */
