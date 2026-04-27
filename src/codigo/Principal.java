@@ -18,9 +18,9 @@ import java.nio.file.Paths;
 public class Principal {
     public static void main(String[] args) throws Exception {
         
-        String ruta1 = "C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/codigo/Lexer.flex";
-        String ruta2 = "C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/codigo/LexerCup.flex";
-        String[] rutaS = {"-parser", "Sintax", "C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/codigo/Sintax.cup"};
+        String ruta1 = "C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/FlexCup/Lexer.flex";
+        String ruta2 = "C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/FlexCup/LexerCup.flex";
+        String[] rutaS = {"-parser", "Sintax", "C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/FlexCup/Sintax.cup"};
         generar(ruta1, ruta2, rutaS);
     }
     public static void generar(String ruta1, String ruta2, String[] rutaS) throws IOException, Exception{

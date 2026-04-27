@@ -51,4 +51,9 @@ public class Inter extends TipoDato {
         }
         throw new Exception("Error semántico: tipos incompatibles");
     }
+    
+    @Override
+    public String toString() {
+        return  " "+valor+" ";
+    }
 }

@@ -350,19 +350,29 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAnalizarLexActionPerformed
 
     private void btnAnalizarSinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarSinActionPerformed
-        // TODO add your handling code here:
         String ST = txtResultado.getText();
-        Sintax s = new Sintax(new codigo.LexerCup(new StringReader(ST)));
-        
-        try {
-            s.parse();
-            txtAnalizarSin.setText("Analisis realizado correctamente");
-            txtAnalizarSin.setForeground(new Color(25, 111, 61));
-        } catch (Exception ex) {
-            Symbol sym = s.getS();
-            txtAnalizarSin.setText("Error de sintaxis. Linea: " + (sym.right + 1) + " Columna: " + (sym.left + 1) + ", Texto: \"" + sym.value + "\"");
-            txtAnalizarSin.setForeground(Color.red);
+    Sintax s = new Sintax(new codigo.LexerCup(new StringReader(ST)));
+
+    try {
+        Object resultado = s.parse().value;
+
+        if (resultado != null) {
+            txtAnalizarSin.setText("Resultado: " + resultado.toString());
+        } else {
+            txtAnalizarSin.setText("Analisis correcto (sin resultado)");
         }
+
+        txtAnalizarSin.setForeground(new Color(25, 111, 61));
+
+    } catch (Exception ex) {
+        Symbol sym = s.getS();
+        txtAnalizarSin.setText(
+            "Error de sintaxis. Linea: " + (sym.right + 1) +
+            " Columna: " + (sym.left + 1) +
+            ", Texto: \"" + sym.value + "\""
+        );
+        txtAnalizarSin.setForeground(Color.red);
+    }
     }//GEN-LAST:event_btnAnalizarSinActionPerformed
 
     /**
