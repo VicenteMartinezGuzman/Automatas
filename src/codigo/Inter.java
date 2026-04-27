@@ -7,8 +7,9 @@ package codigo;
  *
  * @author sandr
  */
-public class Inter extends Operacion {
+public class Inter extends TipoDato {
     private int valor;
+
     public Inter(int valor) {
         this.valor = valor;
     }
@@ -17,60 +18,37 @@ public class Inter extends Operacion {
         return valor;
     }
 
-    public void setValor(int valor) {
-        this.valor = valor;
-    }
-
-    private void validar(Number a, Number b) throws Exception {
-        if (a == null || b == null) {
-            throw new Exception("Error semántico: valores null no permitidos");
+    @Override
+    public TipoDato sumar(TipoDato otro) throws Exception {
+        if (otro instanceof Inter) {
+            return new Inter(this.valor + ((Inter) otro).valor);
         }
+        throw new Exception("Error semántico: tipos incompatibles");
     }
 
     @Override
-    public Number sumar(Number a, Number b) throws Exception {
-        validar(a, b);
-        return a.intValue() + b.intValue();
-    }
-
-    @Override
-    public Number restar(Number a, Number b) throws Exception {
-        validar(a, b);
-        return a.intValue() - b.intValue();
-    }
-
-    @Override
-    public Number multiplicar(Number a, Number b) throws Exception {
-        validar(a, b);
-        return a.intValue() * b.intValue(); 
-    }
-
-    @Override
-    public Number dividir(Number a, Number b) throws Exception {
-        validar(a, b);
-
-        if (b.intValue() == 0) {
-            throw new ArithmeticException("Error semántico: división entre cero");
+    public TipoDato restar(TipoDato otro) throws Exception {
+        if (otro instanceof Inter) {
+            return new Inter(this.valor - ((Inter) otro).valor);
         }
-
-        return a.intValue() / b.intValue();
-    }
-
-    public static Inter parseInter(String texto) throws Exception {
-        if (texto == null || texto.isEmpty()) {
-            throw new Exception("Error semántico: cadena vacía o null");
-        }
-
-        try {
-            int num = Integer.parseInt(texto);
-            return new Inter(num);
-        } catch (NumberFormatException e) {
-            throw new Exception("Error semántico: formato inválido " + texto);
-        }
+        throw new Exception("Error semántico: tipos incompatibles");
     }
 
     @Override
-    public String toString() {
-        return String.valueOf(valor);
+    public TipoDato multiplicar(TipoDato otro) throws Exception {
+        if (otro instanceof Inter) {
+            return new Inter(this.valor * ((Inter) otro).valor);
+        }
+        throw new Exception("Error semántico: tipos incompatibles");
+    }
+
+    @Override
+    public TipoDato dividir(TipoDato otro) throws Exception {
+        if (otro instanceof Inter) {
+            int val = ((Inter) otro).valor;
+            if (val == 0) throw new Exception("División entre cero");
+            return new Inter(this.valor / val);
+        }
+        throw new Exception("Error semántico: tipos incompatibles");
     }
 }

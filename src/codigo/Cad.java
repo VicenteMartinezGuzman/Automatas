@@ -16,7 +16,7 @@ package codigo;
  *   cad nombre || 3.14 ;    → Error: no puedes poner decimal en cad
  *   cad nombre || true ;    → Error: no puedes poner booleano en cad
  */
-public class Cad extends Operacion {
+public class Cad extends TipoDato {
 
     private String nombre;
     private String valor;

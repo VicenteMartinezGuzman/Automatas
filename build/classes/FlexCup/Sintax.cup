@@ -25,6 +25,8 @@ non terminal INICIO, SENTENCIA, DECLARACION, DECLARACION_FOR, IF, IF_ELSE,
 
 start with INICIO;
 
+
+
 INICIO ::= 
     Inter Main Parentesis_a Parentesis_c Llave_a SENTENCIA Llave_c |
     Main Parentesis_a Parentesis_c Llave_a SENTENCIA Llave_c
@@ -87,3 +89,18 @@ DECLARACION_FOR ::=
     Identificador Operador_incremento | 
     Operador_incremento Identificador
 ;
+
+expr ::= expr:e1 Suma expr:e2
+        {: RESULT = ((TipoDato)e1).sumar((TipoDato)e2); :};
+
+expr ::= expr:e1 Resta expr:e2
+        {: RESULT = ((TipoDato)e1).restar((TipoDato)e2); :};
+
+expr ::= expr:e1 Multiplicacion expr:e2
+        {: RESULT = ((TipoDato)e1).multiplicar((TipoDato)e2); :};
+
+expr ::= expr:e1 Division expr:e2
+        {: RESULT = ((TipoDato)e1).dividir((TipoDato)e2); :};
+
+expr ::= Numero:n
+        {: RESULT = new Inter(Integer.parseInt(n.toString())); :};
