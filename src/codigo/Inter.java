@@ -16,6 +16,7 @@ public class Inter extends TipoDato {
 
     public int getValor() {
         return valor;
+
     }
 
     @Override

@@ -1,120 +1,134 @@
-package codigo; // Paquete donde se generará el parser
+package codigo;
 
-import java_cup.runtime.Symbol; // Clase que representa tokens y errores
+import java_cup.runtime.Symbol;
 
-// Código Java que se inserta dentro del parser generado
 parser code
 {:
-    private Symbol s; // Guarda el símbolo donde ocurrió un error
-    
+    private Symbol s;
+
     public void syntax_error(Symbol s){
-        this.s = s; // Se guarda el error cuando ocurre
+        this.s = s;
     }
 
     public Symbol getS(){
-        return this.s; // Permite acceder al error desde fuera (tu interfaz)
+        return this.s;
     }
 :};
 
-// ---------------------- TOKENS ----------------------
-// Son los que vienen del Lexer (JFlex)
+// ---------------- TOKENS ----------------
 terminal Linea, Comillas, Reservado, Inter, Cadena, If, Else, Do, While, For,
     Igual, Suma, Resta, Multiplicacion, Division, Operador_logico, Operador_relacional,
     Operador_atribucion, Operador_incremento, Operador_booleano, Parentesis_a, Parentesis_c,
     Llave_a, Llave_c, Corchete_a, Corchete_c, Main, Finalizador, Identificador,
     Numero, ERROR;
 
-// ---------------------- NO TERMINALES ----------------------
-// Son estructuras del lenguaje (reglas gramaticales)
+// ---------------- NO TERMINALES ----------------
 non terminal INICIO, SENTENCIA, DECLARACION, DECLARACION_FOR, IF, IF_ELSE,
     WHILE, DO_WHILE, FOR, SENTENCIA_BOOLEANA, SENTENCIA_FOR;
 
-// expr devuelve un objeto TipoDato (tu sistema de números)
 non terminal TipoDato expr;
 
-// ---------------------- PRECEDENCIA ----------------------
-// Define prioridad de operadores
-precedence left Suma, Resta;              // + y -
-precedence left Multiplicacion, Division; // * y /
+// ---------------- PRECEDENCIA ----------------
+precedence left Suma, Resta;
+precedence left Multiplicacion, Division;
 
-// ---------------------- INICIO DEL PARSER ----------------------
+// ---------------- INICIO ----------------
 start with INICIO;
 
-// ---------------------- REGLA PRINCIPAL ----------------------
+// ---------------- PROGRAMA ----------------
 INICIO ::= 
     Inter Main Parentesis_a Parentesis_c Llave_a SENTENCIA Llave_c
     |
     Main Parentesis_a Parentesis_c Llave_a SENTENCIA:s Llave_c 
-    {: RESULT = s; :} // Devuelve el resultado final del programa
+    {: RESULT = s; :}
 ;
 
-// ---------------------- SENTENCIAS ----------------------
-// Maneja múltiples instrucciones (como un bloque)
+// ---------------- SENTENCIAS ----------------
 SENTENCIA ::= 
-    SENTENCIA:s DECLARACION:d {: RESULT = d; :} | // toma el último valor
-    DECLARACION:d {: RESULT = d; :} |
+    SENTENCIA:s DECLARACION:d {: RESULT = d; :}
+|   DECLARACION:d {: RESULT = d; :}
 
-    SENTENCIA IF {: RESULT = null; :} | // estructuras sin valor
-    IF {: RESULT = null; :} |
+|   SENTENCIA IF {: RESULT = null; :}
+|   IF {: RESULT = null; :}
 
-    SENTENCIA IF_ELSE {: RESULT = null; :} |
-    IF_ELSE {: RESULT = null; :} |
+|   SENTENCIA IF_ELSE {: RESULT = null; :}
+|   IF_ELSE {: RESULT = null; :}
 
-    SENTENCIA WHILE {: RESULT = null; :} |
-    WHILE {: RESULT = null; :} |
+|   SENTENCIA WHILE {: RESULT = null; :}
+|   WHILE {: RESULT = null; :}
 
-    SENTENCIA DO_WHILE {: RESULT = null; :} |
-    DO_WHILE {: RESULT = null; :} |
+|   SENTENCIA DO_WHILE {: RESULT = null; :}
+|   DO_WHILE {: RESULT = null; :}
 
-    SENTENCIA FOR {: RESULT = null; :} |
-    FOR {: RESULT = null; :}
+|   SENTENCIA FOR {: RESULT = null; :}
+|   FOR {: RESULT = null; :}
 ;
 
-// ---------------------- DECLARACIONES ----------------------
+// ---------------- DECLARACIONES ----------------
 DECLARACION ::= 
-    Inter Identificador Finalizador {: RESULT = null; :} | 
 
-    // int x = expr;
-    Inter Identificador Operador_atribucion expr:e Finalizador 
-        {: RESULT = e; :} |
+    // inter x = expr;
+    Inter Identificador:id Igual expr:e Finalizador 
+    {:
+        if (!(e instanceof Inter)) {
+            throw new RuntimeException(
+                "Error semantico: '" + id + "' es INTER y no acepta ese valor"
+            );
+        }
+        RESULT = e;
+    :}
 
-    // int x = expr;
-    Inter Identificador Igual expr:e Finalizador 
-        {: RESULT = e; :} |
+|   // inter x || expr;
+    Inter Identificador:id Operador_atribucion expr:e Finalizador 
+    {:
+        if (!(e instanceof Inter)) {
+            throw new RuntimeException(
+                "Error semantico: '" + id + "' es INTER y no acepta ese valor"
+            );
+        }
+        RESULT = e;
+    :}
 
-    Inter Identificador Operador_incremento Finalizador {: RESULT = null; :} | 
+|   // cad x = "texto";
+    Cadena Identificador:id Igual Comillas Identificador:txt Comillas Finalizador
+    {:
+        Cad c = new Cad(id.toString(), txt.toString());
+        RESULT = c;
+    :}
 
-    Inter Operador_incremento Identificador Finalizador {: RESULT = null; :} |
+|   // cad x = "";
+    Cadena Identificador:id Igual Comillas Comillas Finalizador
+    {:
+        Cad c = new Cad(id.toString(), "");
+        RESULT = c;
+    :}
 
-    Identificador Operador_atribucion Finalizador {: RESULT = null; :} |
+|   // otras
+    Inter Identificador Finalizador {: RESULT = null; :}
 
-    Reservado Identificador Finalizador {: RESULT = null; :} | 
+|   Inter Identificador Operador_incremento Finalizador {: RESULT = null; :}
 
-    Reservado Identificador Operador_atribucion Numero Finalizador {: RESULT = null; :} |
+|   Inter Operador_incremento Identificador Finalizador {: RESULT = null; :}
 
-    Reservado Identificador Igual expr:e Finalizador 
-        {: RESULT = e; :} |
+|   Identificador Operador_atribucion Finalizador {: RESULT = null; :}
 
-    Reservado Identificador Operador_incremento Finalizador {: RESULT = null; :} | 
+|   Reservado Identificador Finalizador {: RESULT = null; :}
 
-    Reservado Operador_incremento Identificador Finalizador {: RESULT = null; :} |
+|   Reservado Identificador Operador_atribucion Numero Finalizador {: RESULT = null; :}
 
-    // Strings
-    Cadena Identificador Operador_atribucion Comillas Comillas Finalizador {: RESULT = null; :} |
+|   Reservado Identificador Igual expr:e Finalizador {: RESULT = e; :}
 
-    Cadena Identificador Igual Comillas Comillas Finalizador {: RESULT = null; :} |
+|   Reservado Identificador Operador_incremento Finalizador {: RESULT = null; :}
 
-    Cadena Identificador Operador_atribucion Comillas Identificador Comillas Finalizador {: RESULT = null; :} |
-
-    Cadena Identificador Igual Comillas Identificador Comillas Finalizador {: RESULT = null; :}
+|   Reservado Operador_incremento Identificador Finalizador {: RESULT = null; :}
 ;
 
-// ---------------------- IF ----------------------
+// ---------------- IF ----------------
 IF ::= 
     If Parentesis_a SENTENCIA_BOOLEANA Parentesis_c Llave_a SENTENCIA Llave_c
 ;
 
-// ---------------------- EXPRESIONES BOOLEANAS ----------------------
+// ---------------- BOOLEANOS ----------------
 SENTENCIA_BOOLEANA ::= 
     Operador_booleano | 
     Identificador Operador_relacional Operador_booleano |
@@ -124,42 +138,42 @@ SENTENCIA_BOOLEANA ::=
     Identificador Operador_relacional Comillas Identificador Comillas
 ;
 
-// ---------------------- IF ELSE ----------------------
+// ---------------- IF ELSE ----------------
 IF_ELSE ::= 
     If Parentesis_a SENTENCIA_BOOLEANA Parentesis_c Llave_a SENTENCIA Llave_c 
     Else Llave_a SENTENCIA Llave_c
 ;
 
-// ---------------------- WHILE ----------------------
+// ---------------- WHILE ----------------
 WHILE ::= 
     While Parentesis_a SENTENCIA_BOOLEANA Parentesis_c Llave_a SENTENCIA Llave_c
 ;
 
-// ---------------------- DO WHILE ----------------------
+// ---------------- DO WHILE ----------------
 DO_WHILE ::= 
     Do Llave_a SENTENCIA Llave_c 
     While Parentesis_a SENTENCIA_BOOLEANA Parentesis_c Finalizador
 ;
 
-// ---------------------- FOR ----------------------
+// ---------------- FOR ----------------
 FOR ::= 
     For Parentesis_a SENTENCIA_FOR Parentesis_c Llave_a SENTENCIA Llave_c
 ;
 
-// ---------------------- FOR INTERNO ----------------------
+// ---------------- FOR INTERNO ----------------
 SENTENCIA_FOR ::= 
     Reservado Identificador Igual Numero Finalizador SENTENCIA_BOOLEANA Finalizador DECLARACION_FOR |
     Identificador Igual Numero Finalizador SENTENCIA_BOOLEANA Finalizador DECLARACION_FOR
 ;
 
-// ---------------------- INCREMENTO FOR ----------------------
+// ---------------- INCREMENTO ----------------
 DECLARACION_FOR ::= 
     Identificador Operador_atribucion Numero |
     Identificador Operador_incremento | 
     Operador_incremento Identificador
 ;
 
-// ---------------------- EXPRESIONES MATEMÁTICAS ----------------------
+// ---------------- EXPRESIONES ----------------
 
 // suma
 expr ::= expr:e1 Suma expr:e2
@@ -181,6 +195,10 @@ expr ::= expr:e1 Division expr:e2
 expr ::= Parentesis_a expr:e Parentesis_c
         {: RESULT = e; :};
 
-// número base
+// número
 expr ::= Numero:n
         {: RESULT = new Inter(Integer.parseInt(n.toString())); :};
+
+// cadena
+expr ::= Comillas Identificador:txt Comillas
+        {: RESULT = new Cad("", txt.toString()); :};

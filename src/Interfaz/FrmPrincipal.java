@@ -355,6 +355,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
     try {
         Object resultado = s.parse().value;
+        
 
         if (resultado != null) {
             txtAnalizarSin.setText("Resultado: " + resultado.toString());
