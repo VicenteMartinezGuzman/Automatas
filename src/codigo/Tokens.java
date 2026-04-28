@@ -14,8 +14,6 @@ public enum Tokens {
     Linea,
     Comillas,
     Reservado,
-    Inter,
-    Cadena,
     If,
     Else,
     Do,

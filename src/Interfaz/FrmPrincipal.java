@@ -5,9 +5,10 @@
  */
 package Interfaz;
 
-import codigo.Lexer;
-import codigo.Sintax;
+
+import java.util.HashMap;
 import codigo.Tokens;
+import codigo.Lexico;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,7 +17,7 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java_cup.runtime.Symbol;
+
 import javax.swing.JFileChooser;
 
 /**
@@ -183,6 +184,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         txtResultado.setColumns(20);
         txtResultado.setRows(5);
+        txtResultado.setText("\n");
         jScrollPane1.setViewportView(txtResultado);
 
         txtAnalizarLex.setEditable(false);
@@ -342,38 +344,16 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLimpiarSinActionPerformed
 
     private void btnAnalizarLexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarLexActionPerformed
-        try {
-            analizarLexico();
-        } catch (IOException ex) {
-            Logger.getLogger(FrmPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        String ST = txtResultado.getText();
+        Lexico l=new Lexico();
+        l.extraerCodigo(ST);
+        
+        
+        
     }//GEN-LAST:event_btnAnalizarLexActionPerformed
 
     private void btnAnalizarSinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarSinActionPerformed
-        String ST = txtResultado.getText();
-    Sintax s = new Sintax(new codigo.LexerCup(new StringReader(ST)));
-
-    try {
-        Object resultado = s.parse().value;
         
-
-        if (resultado != null) {
-            txtAnalizarSin.setText("Resultado: " + resultado.toString());
-        } else {
-            txtAnalizarSin.setText("Analisis correcto (sin resultado)");
-        }
-
-        txtAnalizarSin.setForeground(new Color(25, 111, 61));
-
-    } catch (Exception ex) {
-        Symbol sym = s.getS();
-        txtAnalizarSin.setText(
-            "Error de sintaxis. Linea: " + (sym.right + 1) +
-            " Columna: " + (sym.left + 1) +
-            ", Texto: \"" + sym.value + "\""
-        );
-        txtAnalizarSin.setForeground(Color.red);
-    }
     }//GEN-LAST:event_btnAnalizarSinActionPerformed
 
     /**
