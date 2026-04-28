@@ -9,6 +9,15 @@ package Interfaz;
 import codigo.Tokens;
 import codigo.Token;
 import codigo.Lexico;
+import static codigo.Tokens.Cad;
+import static codigo.Tokens.Division;
+import static codigo.Tokens.Double;
+import static codigo.Tokens.Finalizador;
+import static codigo.Tokens.Inter;
+import static codigo.Tokens.Llave_a;
+import static codigo.Tokens.Llave_c;
+import static codigo.Tokens.Main;
+import static codigo.Tokens.Multiplicacion;
 import java.util.List;
 import java.util.ArrayList;;
 import java.awt.Color;
@@ -40,6 +49,62 @@ public class FrmPrincipal extends javax.swing.JFrame {
     
     private void analizarLexico() throws IOException{
         List<Token> tok=l.getTokens();
+        StringBuilder completo = new StringBuilder();
+        int valor=0;
+        completo.append("SIMBOLO     LEXEMA\n\n");
+        for (int i = 0; i < tok.size(); i++) {
+            System.out.println(tok.size());
+          switch (tok.get(i).getTkns()) {
+            case Inter:
+                completo.append("<Reservado>     inter\n");
+                break;
+            case Main:
+                completo.append("<Reservado>     main\n");
+                break;
+            case Finalizador:
+                completo.append("<Finalizador>     $\n");
+                break;
+            case Double:
+                completo.append("<Reservado>     dec\n");
+                break;
+            case Cad:
+                completo.append("<Reservado>     cad\n");
+                break;
+            case Parentesis_a:
+                completo.append("<Parentesis_a>     (\n");
+                break;
+            case Parentesis_c:
+                completo.append("<Parentesis_c>     )\n");
+                break;
+            case Llave_a:
+                completo.append("<Llave_a>     {\n");
+                break;
+            case Llave_c:
+                completo.append("<Llave_c>     }\n");
+                break;
+            case Suma:
+                completo.append("<Operador suma>     +\n");
+                break;
+            case Resta:
+                completo.append("<Operador Resta>     -\n");
+                break;
+            case Multiplicacion:
+                completo.append("<Operador Multiplicacion>     *\n");
+                break;
+            case Division:
+                completo.append("<Operador Division>     /\n");
+                break;
+            case Identificador:
+                completo.append("<Identificador>"+ tok.get(i).getLexema()+"\n");
+                break;
+            case Numero:
+                completo.append("<Constante>"+tok.get(i).getLexema()+"\n");
+                break;
+            default:
+                completo.append("<Sin definir>"+tok.get(i).getTkns()+"\n");;
+        }  
+        }
+        txtAnalizarLex.setText(completo.toString());
     }
 
     /**
@@ -213,6 +278,11 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private void btnAnalizarLexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarLexActionPerformed
         
         l.extraerCodigo(txtResultado.getText());
+        try {
+            analizarLexico();
+        } catch (IOException ex) {
+            Logger.getLogger(FrmPrincipal.class.getName()).log(Level.SEVERE, null, ex);
+        }
   
     }//GEN-LAST:event_btnAnalizarLexActionPerformed
 

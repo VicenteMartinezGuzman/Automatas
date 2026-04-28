@@ -25,7 +25,7 @@ public class sym {
   public static final int Main = 28;
   public static final int Cadena = 6;
   public static final int Inter = 5;
-  public static final int Double = 32;
+  public static final int Dec = 33; //numero mayor
   public static final int EOF = 0;
   public static final int Reservado = 4;
   public static final int Operador_logico = 17;

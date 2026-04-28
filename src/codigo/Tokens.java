@@ -13,10 +13,9 @@ package codigo;
 public enum Tokens {
     Linea,
     Comillas,
-    Reservado,
     Inter,
     Double,
-    Cadena,
+    Cad,
     If,
     Else,
     Do,

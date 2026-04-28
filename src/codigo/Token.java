@@ -21,27 +21,27 @@ public class Token {
     public Token(){
     }
 
-    private Tokens getTkns() {
+    public Tokens getTkns() {
         return tkns;
     }
 
-    private void setTkns(Tokens tkns) {
+    public void setTkns(Tokens tkns) {
         this.tkns = tkns;
     }
 
-    private String getLexema() {
+    public String getLexema() {
         return lexema;
     }
 
-    private void setLexema(String lexema) {
+    public void setLexema(String lexema) {
         this.lexema = lexema;
     }
 
-    private int getTipo() {
+    public int getTipo() {
         return tipo;
     }
 
-    private void setTipo(int tipo) {
+    public void setTipo(int tipo) {
         this.tipo = tipo;
     }
      
