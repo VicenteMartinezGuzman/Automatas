@@ -7,7 +7,7 @@ import codigo.sym;
 import codigo.Tokens;
 import static codigo.Tokens.Linea;
 import java.util.List;
-import java.util.ArrayList;;
+import java.util.ArrayList;
 import java.util.HashMap;
 import codigo.Token;
 import sun.jvm.hotspot.debugger.cdbg.Sym;
@@ -19,9 +19,11 @@ import sun.jvm.hotspot.debugger.cdbg.Sym;
 
 public class Lexico {
 
-    List<Token> tokens = new ArrayList<>();
+    List<Token> tokens;
 
-    public Lexico() {}
+    public Lexico() {
+    tokens = new ArrayList<>();
+    }
 
     public void extraerCodigo(String linea) {
         int i = 0,contador=0;
@@ -58,6 +60,21 @@ public class Lexico {
                         break;
                     case '$':
                         tokens.add(new Token("$", sym.Finalizador,Tokens.Finalizador));
+                        break;
+                    case '+':
+                        tokens.add(new Token("+", sym.Suma,Tokens.Suma));
+                        break;
+                    case '-':
+                        tokens.add(new Token("-", sym.Resta,Tokens.Resta));
+                        break;
+                    case '*':
+                        tokens.add(new Token("*", sym.Multiplicacion,Tokens.Multiplicacion));
+                        break;    
+                    case '/':
+                        tokens.add(new Token("/", sym.Division,Tokens.Division));
+                        break;
+                    case '.':
+                        tokens.add(new Token(".", sym.Division,Tokens.Division));
                         break;
                     default:
                         System.out.println("Símbolo no reconocido: " + c);
@@ -97,7 +114,12 @@ public class Lexico {
                     case "main":
                         tokens.add(new Token(palabra, sym.Reservado,Tokens.Reservado));
                         break;
-                    
+                    case "dec":
+                        tokens.add(new Token(palabra, sym.Double,Tokens.Double));
+                        break;
+                    case "cad":
+                        tokens.add(new Token(palabra, sym.Cadena,Tokens.Cadena));
+                        break;
                     default:
                         tokens.add(new Token(palabra, sym.Identificador,Tokens.Identificador));
                 }
@@ -107,6 +129,15 @@ public class Lexico {
 
             i++;
         }
+       
         System.out.println(tokens);
+    }
+
+    public List<Token> getTokens() {
+        return tokens;
+    }
+
+    public void setTokens(List<Token> tokens) {
+        this.tokens = tokens;
     }
 }

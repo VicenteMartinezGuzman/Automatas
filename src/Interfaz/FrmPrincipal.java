@@ -6,15 +6,18 @@
 package Interfaz;
 
 
-import java.util.HashMap;
 import codigo.Tokens;
+import codigo.Token;
 import codigo.Lexico;
+import java.util.List;
+import java.util.ArrayList;;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,17 +28,18 @@ import javax.swing.JFileChooser;
  * @author Charly Ponce
  */
 public class FrmPrincipal extends javax.swing.JFrame {
-    
+    Lexico l;
     /**
      * Creates new form FrmPrincipal
      */
     public FrmPrincipal() {
         initComponents();
         this.setLocationRelativeTo(null);
+        l=new Lexico();
     }
     
     private void analizarLexico() throws IOException{
-        
+        List<Token> tok=l.getTokens();
     }
 
     /**
@@ -207,7 +211,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLimpiarSinActionPerformed
 
     private void btnAnalizarLexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarLexActionPerformed
-        Lexico l=new Lexico();
+        
         l.extraerCodigo(txtResultado.getText());
   
     }//GEN-LAST:event_btnAnalizarLexActionPerformed

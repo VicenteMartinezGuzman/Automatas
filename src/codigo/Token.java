@@ -8,7 +8,7 @@ package codigo;
  *
  * @author vicen
  */
-class Token {
+public class Token {
     String lexema;
     int tipo;
     Tokens tkns;
@@ -21,27 +21,27 @@ class Token {
     public Token(){
     }
 
-    public Tokens getTkns() {
+    private Tokens getTkns() {
         return tkns;
     }
 
-    public void setTkns(Tokens tkns) {
+    private void setTkns(Tokens tkns) {
         this.tkns = tkns;
     }
 
-    public String getLexema() {
+    private String getLexema() {
         return lexema;
     }
 
-    public void setLexema(String lexema) {
+    private void setLexema(String lexema) {
         this.lexema = lexema;
     }
 
-    public int getTipo() {
+    private int getTipo() {
         return tipo;
     }
 
-    public void setTipo(int tipo) {
+    private void setTipo(int tipo) {
         this.tipo = tipo;
     }
      
