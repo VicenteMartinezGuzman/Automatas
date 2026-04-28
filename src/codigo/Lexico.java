@@ -74,7 +74,7 @@ public class Lexico {
                         tokens.add(new Token("/", sym.Division,Tokens.Division));
                         break;
                     case '.':
-                        tokens.add(new Token(".", sym.Division,Tokens.Division));
+                        tokens.add(new Token(".", sym.OperadorDecimal,Tokens.OperadorDecimal));
                         break;
                     default:
                         System.out.println("Símbolo no reconocido: " + c);
@@ -130,7 +130,7 @@ public class Lexico {
             i++;
         }
        
-        System.out.println(tokens);
+        System.out.println(tokens+" Hola");
     }
 
     public List<Token> getTokens() {

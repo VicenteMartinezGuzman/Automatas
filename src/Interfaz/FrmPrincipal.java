@@ -18,6 +18,7 @@ import static codigo.Tokens.Llave_a;
 import static codigo.Tokens.Llave_c;
 import static codigo.Tokens.Main;
 import static codigo.Tokens.Multiplicacion;
+import static codigo.Tokens.Numero;
 import java.util.List;
 import java.util.ArrayList;;
 import java.awt.Color;
@@ -38,68 +39,74 @@ import javax.swing.JFileChooser;
  */
 public class FrmPrincipal extends javax.swing.JFrame {
     Lexico l;
+    StringBuilder completo;
+    List<Token> tok;
     /**
      * Creates new form FrmPrincipal
      */
     public FrmPrincipal() {
         initComponents();
         this.setLocationRelativeTo(null);
-        l=new Lexico();
+        
     }
     
     private void analizarLexico() throws IOException{
-        List<Token> tok=l.getTokens();
-        StringBuilder completo = new StringBuilder();
+        tok=l.getTokens();
+        completo = new StringBuilder();
         int valor=0;
-        completo.append("SIMBOLO     LEXEMA\n\n");
+        completo.append("SIMBOLO             LEXEMA\n\n");
         for (int i = 0; i < tok.size(); i++) {
             System.out.println(tok.size());
           switch (tok.get(i).getTkns()) {
             case Inter:
-                completo.append("<Reservado>     inter\n");
+                completo.append("<Reservado>        inter\n");
                 break;
             case Main:
-                completo.append("<Reservado>     main\n");
+                completo.append("<Reservado>        main\n");
                 break;
             case Finalizador:
-                completo.append("<Finalizador>     $\n");
+                completo.append("<Finalizador>       $\n");
                 break;
             case Double:
-                completo.append("<Reservado>     dec\n");
+                completo.append("<Reservado>        dec\n");
                 break;
             case Cad:
-                completo.append("<Reservado>     cad\n");
+                completo.append("<Reservado>        cad\n");
                 break;
             case Parentesis_a:
-                completo.append("<Parentesis_a>     (\n");
+                completo.append("<Parentesis_a>        (\n");
                 break;
             case Parentesis_c:
-                completo.append("<Parentesis_c>     )\n");
+                completo.append("<Parentesis_c>        )\n");
                 break;
             case Llave_a:
-                completo.append("<Llave_a>     {\n");
+                completo.append("<Llave_a>        {\n");
                 break;
             case Llave_c:
-                completo.append("<Llave_c>     }\n");
+                completo.append("<Llave_c>        }\n");
                 break;
             case Suma:
-                completo.append("<Operador suma>     +\n");
+                completo.append("<Operador suma>        +\n");
                 break;
             case Resta:
-                completo.append("<Operador Resta>     -\n");
+                completo.append("<Operador Resta>        -\n");
                 break;
             case Multiplicacion:
-                completo.append("<Operador Multiplicacion>     *\n");
+                completo.append("<Operador Multiplicacion>        *\n");
                 break;
             case Division:
-                completo.append("<Operador Division>     /\n");
+                completo.append("<Operador Division>        /\n");
                 break;
             case Identificador:
-                completo.append("<Identificador>"+ tok.get(i).getLexema()+"\n");
+                completo.append("<Identificador>         "+ tok.get(i).getLexema()+"\n");
                 break;
             case Numero:
-                completo.append("<Constante>"+tok.get(i).getLexema()+"\n");
+                completo.append("<Constante>        "+tok.get(i).getLexema()+"\n");
                 break;
+            case OperadorDecimal:
+                completo.append("<Constante>        "+tok.get(i).getLexema()+"\n");
+                break;
+            
             default:
                 completo.append("<Sin definir>"+tok.get(i).getTkns()+"\n");;
         }  
@@ -267,16 +274,23 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
     private void btnLimpiarLexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarLexActionPerformed
         // TODO add your handling code here:
+        if(completo!=null&&l!=null&&txtAnalizarLex!=null){
+        completo.setLength(0);
+        l=null;
         txtAnalizarLex.setText(null);
+        }
+        
+        
     }//GEN-LAST:event_btnLimpiarLexActionPerformed
 
     private void btnLimpiarSinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarSinActionPerformed
         // TODO add your handling code here:
         txtAnalizarSin.setText(null);
+        
     }//GEN-LAST:event_btnLimpiarSinActionPerformed
 
     private void btnAnalizarLexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarLexActionPerformed
-        
+        l=new Lexico();
         l.extraerCodigo(txtResultado.getText());
         try {
             analizarLexico();
