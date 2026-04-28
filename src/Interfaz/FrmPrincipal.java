@@ -35,114 +35,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }
     
     private void analizarLexico() throws IOException{
-        int cont = 1;
         
-        String expr = (String) txtResultado.getText();
-        Lexer lexer = new Lexer(new StringReader(expr));
-        String resultado = "<LINEA> " + cont + "\t\t<SIMBOLO>\n";
-        while (true) {
-            Tokens token = lexer.yylex();
-            if (token == null) {
-                txtAnalizarLex.setText(resultado);
-                return;
-            }
-            switch (token) {
-                case Linea:
-                    cont++;
-                    resultado += "<LINEA> " + cont + "\n";
-                    break;
-                case Comillas:
-                    resultado += "  #Comillas#\t\t" + lexer.lexeme + "\n";
-                    break;
-                case Cadena:
-                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
-                    break;
-                case Reservado:
-                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
-                    break;
-                case If:
-                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
-                    break;
-                case Else:
-                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
-                    break;
-                case Do:
-                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
-                    break;
-                case While:
-                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
-                    break;
-                case For:
-                    resultado += "  #Palabra Reservada#\t" + lexer.lexeme + "\n";
-                    break;
-                case Igual:
-                    resultado += "  #Operador de asignación#\t" + lexer.lexeme + "\n";
-                    break;
-                case Suma:
-                    resultado += "  #Operador suma#\t" + lexer.lexeme + "\n";
-                    break;
-                case Resta:
-                    resultado += "  #Operador resta#\t" + lexer.lexeme + "\n";
-                    break;
-                case Multiplicacion:
-                    resultado += "  #Operador multiplicacion#\t" + lexer.lexeme + "\n";
-                    break;
-                case Division:
-                    resultado += "  #Operador division#\t" + lexer.lexeme + "\n";
-                    break;
-                case Operador_logico:
-                    resultado += "  #Operador logico#\t" + lexer.lexeme + "\n";
-                    break;
-                case Operador_incremento:
-                    resultado += "  #Operador incremento#\t" + lexer.lexeme + "\n";
-                    break;
-                case Operador_relacional:
-                    resultado += "  #Operador relacional#\t" + lexer.lexeme + "\n";
-                    break;
-                case Operador_atribucion:
-                    resultado += "  #Operador atribucion#\t" + lexer.lexeme + "\n";
-                    break;
-                case Operador_booleano:
-                    resultado += "  #Operador booleano#\t" + lexer.lexeme + "\n";
-                    break;
-                case Parentesis_a:
-                    resultado += "  #Parentesis de apertura#\t" + lexer.lexeme + "\n";
-                    break;
-                case Parentesis_c:
-                    resultado += "  #Parentesis de cierre#\t" + lexer.lexeme + "\n";
-                    break;
-                case Llave_a:
-                    resultado += "  #Llave de apertura#\t" + lexer.lexeme + "\n";
-                    break;
-                case Llave_c:
-                    resultado += "  #Llave de cierre#\t" + lexer.lexeme + "\n";
-                    break;
-                case Corchete_a:
-                    resultado += "  #Corchete de apertura#\t" + lexer.lexeme + "\n";
-                    break;
-                case Corchete_c:
-                    resultado += "  #Corchete de cierre#\t" + lexer.lexeme + "\n";
-                    break;
-                case Main:
-                    resultado += "  #Reservada main#\t" + lexer.lexeme + "\n";
-                    break;
-                case Finalizador:
-                    resultado += "  #Finalizador#\t" + lexer.lexeme + "\n";
-                    break;
-                case Identificador:
-                    resultado += "  #Identificador#\t\t" + lexer.lexeme + "\n";
-                    break;
-                case Numero:
-                    resultado += "  #Constante#\t\t" + lexer.lexeme + "\n";
-                    break;
-                case ERROR:
-                    resultado += "  #Simbolo no definido#\n";
-                    break;
-                default:
-                    resultado += "  # " + lexer.lexeme + " #\n";
-                    break;
-            }
-        }
     }
 
     /**
@@ -155,7 +48,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        btnArchivo = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         txtResultado = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -172,15 +64,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
 
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Analizador Lexico", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 18))); // NOI18N
-
-        btnArchivo.setBackground(new java.awt.Color(51, 204, 255));
-        btnArchivo.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        btnArchivo.setText("Abrir archivo");
-        btnArchivo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnArchivoActionPerformed(evt);
-            }
-        });
 
         txtResultado.setColumns(20);
         txtResultado.setRows(5);
@@ -224,10 +107,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                         .addGap(41, 41, 41)
                         .addComponent(btnAnalizarLex)
                         .addGap(50, 50, 50)
-                        .addComponent(btnLimpiarLex))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(btnArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnLimpiarLex)))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
                 .addContainerGap())
@@ -235,8 +115,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(btnArchivo)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(41, 41, 41)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -317,22 +196,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnArchivoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnArchivoActionPerformed
-        // TODO add your handling code here:
-        JFileChooser chooser = new JFileChooser();
-        chooser.showOpenDialog(null);
-        File archivo = new File(chooser.getSelectedFile().getAbsolutePath());
-        
-        try {
-            String ST = new String(Files.readAllBytes(archivo.toPath()));
-            txtResultado.setText(ST);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(FrmPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(FrmPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_btnArchivoActionPerformed
-
     private void btnLimpiarLexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarLexActionPerformed
         // TODO add your handling code here:
         txtAnalizarLex.setText(null);
@@ -344,12 +207,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_btnLimpiarSinActionPerformed
 
     private void btnAnalizarLexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarLexActionPerformed
-        String ST = txtResultado.getText();
         Lexico l=new Lexico();
-        l.extraerCodigo(ST);
-        
-        
-        
+        l.extraerCodigo(txtResultado.getText());
+  
     }//GEN-LAST:event_btnAnalizarLexActionPerformed
 
     private void btnAnalizarSinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarSinActionPerformed
@@ -394,7 +254,6 @@ public class FrmPrincipal extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAnalizarLex;
     private javax.swing.JButton btnAnalizarSin;
-    private javax.swing.JButton btnArchivo;
     private javax.swing.JButton btnLimpiarLex;
     private javax.swing.JButton btnLimpiarSin;
     private javax.swing.JPanel jPanel1;

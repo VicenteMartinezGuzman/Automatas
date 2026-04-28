@@ -24,32 +24,40 @@ public class Lexico {
     public Lexico() {}
 
     public void extraerCodigo(String linea) {
-
-        int i = 0;
+        int i = 0,contador=0;
 
         while (i < linea.length()) {
             char c = linea.charAt(i);
 
             // Ignorar espacios
-            if (Character.isWhitespace(c)) {
+            if (Character.isWhitespace(c)&&c!='\n') {
                 i++;
                 continue;
+            }
+            if (c == '\r') {
+            System.out.println("Salto de línea detectado");
+            i++;
+            continue;
             }
 
             // Símbolos especiales
             if (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c)) {
+                     
                 switch (c) {
                     case '(':
-                        tokens.add(new Token("(", sym.Parentesis_a));
+                        tokens.add(new Token("(", sym.Parentesis_a,Tokens.Parentesis_a));
                         break;
                     case ')':
-                        tokens.add(new Token(")", sym.Parentesis_c));
+                        tokens.add(new Token(")", sym.Parentesis_c,Tokens.Parentesis_c));
                         break;
                     case '{':
-                        tokens.add(new Token("{", sym.Llave_a));
+                        tokens.add(new Token("{", sym.Llave_a,Tokens.Llave_a));
                         break;
                     case '}':
-                        tokens.add(new Token("}", sym.Llave_c));
+                        tokens.add(new Token("}", sym.Llave_c,Tokens.Llave_c));
+                        break;
+                    case '$':
+                        tokens.add(new Token("$", sym.Finalizador,Tokens.Finalizador));
                         break;
                     default:
                         System.out.println("Símbolo no reconocido: " + c);
@@ -67,7 +75,7 @@ public class Lexico {
                     i++;
                 }
 
-                tokens.add(new Token(num.toString(), sym.Numero));
+                tokens.add(new Token(num.toString(), sym.Numero,Tokens.Numero));
                 continue;
             }
 
@@ -84,11 +92,14 @@ public class Lexico {
 
                 switch (palabra) {
                     case "inter":
-                    case "main":
-                        tokens.add(new Token(palabra, sym.Reservado));
+                        tokens.add(new Token(palabra, sym.Inter,Tokens.Inter));
                         break;
+                    case "main":
+                        tokens.add(new Token(palabra, sym.Reservado,Tokens.Reservado));
+                        break;
+                    
                     default:
-                        tokens.add(new Token(palabra, sym.Identificador));
+                        tokens.add(new Token(palabra, sym.Identificador,Tokens.Identificador));
                 }
 
                 continue;
