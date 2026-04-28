@@ -12,6 +12,7 @@ package codigo;
 
 public enum Tokens {
     Linea,
+    Comentarios,
     Comillas,
     OperadorDecimal,
     Inter,

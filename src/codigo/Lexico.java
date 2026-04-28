@@ -28,7 +28,6 @@ public class Lexico {
     public void extraerCodigo(String linea) {
         int i = 0,contadorIgual=0;
         StringBuilder signoIgual = new StringBuilder();
-        
         while (i < linea.length()) {
             char c = linea.charAt(i);
 
@@ -84,7 +83,9 @@ public class Lexico {
                         tokens.add(new Token("||", sym.Igual,Tokens.Igual));
                         contadorIgual=0;
                         }
-                        
+                        break;
+                    case '#':
+                        tokens.add(new Token("#", sym.Comentarios,Tokens.Comentarios));
                         break;
                     default:
                         System.out.println("Símbolo no reconocido: " + c);

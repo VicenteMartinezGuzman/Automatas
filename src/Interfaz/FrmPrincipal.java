@@ -13,6 +13,7 @@ import static codigo.Tokens.Cad;
 import static codigo.Tokens.Division;
 import static codigo.Tokens.Double;
 import static codigo.Tokens.Finalizador;
+import static codigo.Tokens.Igual;
 import static codigo.Tokens.Inter;
 import static codigo.Tokens.Llave_a;
 import static codigo.Tokens.Llave_c;
@@ -109,6 +110,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 break;
             case Igual:
                 completo.append("<Operador de asignacion>        "+tok.get(i).getLexema()+"\n");
+                break;
+            case Comentarios:
+                completo.append("<Signo Comentario>        "+tok.get(i).getLexema()+"\n");
                 break;
             default:
                 completo.append("<Sin definir>"+tok.get(i).getTkns()+"\n");;
