@@ -19,6 +19,7 @@ import static codigo.Tokens.Llave_c;
 import static codigo.Tokens.Main;
 import static codigo.Tokens.Multiplicacion;
 import static codigo.Tokens.Numero;
+import static codigo.Tokens.OperadorDecimal;
 import java.util.List;
 import java.util.ArrayList;;
 import java.awt.Color;
@@ -106,7 +107,9 @@ public class FrmPrincipal extends javax.swing.JFrame {
             case OperadorDecimal:
                 completo.append("<Constante>        "+tok.get(i).getLexema()+"\n");
                 break;
-            
+            case Igual:
+                completo.append("<Operador de asignacion>        "+tok.get(i).getLexema()+"\n");
+                break;
             default:
                 completo.append("<Sin definir>"+tok.get(i).getTkns()+"\n");;
         }  

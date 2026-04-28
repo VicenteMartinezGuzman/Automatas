@@ -26,8 +26,9 @@ public class Lexico {
     }
 
     public void extraerCodigo(String linea) {
-        int i = 0,contador=0;
-
+        int i = 0,contadorIgual=0;
+        StringBuilder signoIgual = new StringBuilder();
+        
         while (i < linea.length()) {
             char c = linea.charAt(i);
 
@@ -75,6 +76,15 @@ public class Lexico {
                         break;
                     case '.':
                         tokens.add(new Token(".", sym.OperadorDecimal,Tokens.OperadorDecimal));
+                        break;
+                    case '|':
+                        contadorIgual++;
+                        signoIgual.append('|');
+                        if(contadorIgual==2){
+                        tokens.add(new Token("||", sym.Igual,Tokens.Igual));
+                        contadorIgual=0;
+                        }
+                        
                         break;
                     default:
                         System.out.println("Símbolo no reconocido: " + c);
