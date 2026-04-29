@@ -90,8 +90,25 @@ public class Lexico {
                         tokens.add(new Token("#", sym.Comentarios,Tokens.Comentarios));
                         break;
                     case '"':
-                        tokens.add(new Token("\"", sym.Comillas, Tokens.Comillas));
-                        break;
+                        StringBuilder cadena = new StringBuilder();
+    cadena.append('"');
+    i++; // saltar primera comilla
+
+    while (i < linea.length() && linea.charAt(i) != '"') {
+        cadena.append(linea.charAt(i));
+        i++;
+    }
+
+    if (i < linea.length()) {
+        cadena.append('"'); // comilla de cierre
+        i++; // saltar comilla de cierre
+    } else {
+        System.out.println("Error léxico: cadena sin cerrar");
+    }
+
+    tokens.add(new Token(cadena.toString(), sym.Comillas, Tokens.Comillas));
+    i--; // ← ESTA ES LA CORRECCIÓN, contrarresta el i++ de abajo
+    break;
                     default:
                         System.out.println("Símbolo no reconocido: " + c);
                 }

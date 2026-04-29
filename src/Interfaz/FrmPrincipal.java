@@ -9,6 +9,7 @@ package Interfaz;
 import codigo.Tokens;
 import codigo.Token;
 import codigo.Lexico;
+import codigo.Sintactico;
 import static codigo.Tokens.Cad;
 import static codigo.Tokens.Comentarios;
 import static codigo.Tokens.Division;
@@ -44,6 +45,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     Lexico l;
     StringBuilder completo;
     List<Token> tok;
+    Sintactico sintactico = new Sintactico();
     /**
      * Creates new form FrmPrincipal
      */
@@ -121,7 +123,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 completo.append("\n<LINEA " +(valor+1)+">\n");
                 break;
             case Comillas:
-                completo.append("<Comillas>           "+tok.get(i).getLexema()+"\n");
+                completo.append("<Cad>           "+tok.get(i).getLexema()+"\n");
                 break;
             default:
                 completo.append("<Sin definir>"+tok.get(i).getTkns()+"\n");;
@@ -317,7 +319,8 @@ public class FrmPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAnalizarLexActionPerformed
 
     private void btnAnalizarSinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarSinActionPerformed
-        
+    sintactico.setTokens(tok);
+    txtAnalizarSin.setText(sintactico.analizar()); 
     }//GEN-LAST:event_btnAnalizarSinActionPerformed
 
     /**
