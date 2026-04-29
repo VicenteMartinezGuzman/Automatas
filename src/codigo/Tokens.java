@@ -43,5 +43,7 @@ public enum Tokens {
     Finalizador,
     Identificador,
     Numero,
-    ERROR
+    ERROR,
+    Incremento,
+    Decremento
 }
