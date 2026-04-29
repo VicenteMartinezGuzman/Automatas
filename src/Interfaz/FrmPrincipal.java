@@ -46,92 +46,138 @@ public class FrmPrincipal extends javax.swing.JFrame {
     StringBuilder completo;
     List<Token> tok;
     Sintactico sintactico = new Sintactico();
-    /**
-     * Creates new form FrmPrincipal
-     */
+
     public FrmPrincipal() {
         initComponents();
         this.setLocationRelativeTo(null);
-        
-    }
-    
-    private void analizarLexico() throws IOException{
-        tok=l.getTokens();
-        completo = new StringBuilder();
-        int valor=0;
-        completo.append("SIMBOLO             LEXEMA\n\n");
-        completo.append("<LINEA 1>\n");
-        for (int i = 0; i < tok.size(); i++) {
-            System.out.println(tok.size());
-          switch (tok.get(i).getTkns()) {
-            case Inter:
-                completo.append("<Reservado>        inter\n");
-                break;
-            case Main:
-                completo.append("<Reservado>        main\n");
-                break;
-            case Finalizador:
-                completo.append("<Finalizador>       $\n");
-                break;
-            case Double:
-                completo.append("<Reservado>        dec\n");
-                break;
-            case Cad:
-                completo.append("<Reservado>        cad\n");
-                break;
-            case Parentesis_a:
-                completo.append("<Parentesis_a>        (\n");
-                break;
-            case Parentesis_c:
-                completo.append("<Parentesis_c>        )\n");
-                break;
-            case Llave_a:
-                completo.append("<Llave_a>        {\n");
-                break;
-            case Llave_c:
-                completo.append("<Llave_c>        }\n");
-                break;
-            case Suma:
-                completo.append("<Operador suma>        +\n");
-                break;
-            case Resta:
-                completo.append("<Operador Resta>        -\n");
-                break;
-            case Multiplicacion:
-                completo.append("<Operador Multiplicacion>        *\n");
-                break;
-            case Division:
-                completo.append("<Operador Division>        /\n");
-                break;
-            case Identificador:
-                completo.append("<Identificador>         "+ tok.get(i).getLexema()+"\n");
-                break;
-            case Numero:
-                completo.append("<Constante>        "+tok.get(i).getLexema()+"\n");
-                break;
-            case OperadorDecimal:
-                completo.append("<Operador Decimal>        "+tok.get(i).getLexema()+"\n");
-                break;
-            case Igual:
-                completo.append("<Operador de asignacion>        "+tok.get(i).getLexema()+"\n");
-                break;
-            case Comentarios:
-                completo.append("<Signo Comentario>        "+tok.get(i).getLexema()+"\n");
-                break;
-            case Linea:
-                valor++;
-                completo.append("\n<LINEA " +(valor+1)+">\n");
-                break;
-            case Comillas:
-                completo.append("<Cad>           "+tok.get(i).getLexema()+"\n");
-                break;
-            default:
-                completo.append("<Sin definir>"+tok.get(i).getTkns()+"\n");;
-        }  
-        }
-        txtAnalizarLex.setText(completo.toString());
+        txtAnalizarLex.setFont(new java.awt.Font("Courier New", 0, 12));
     }
 
+    private void analizarLexico() throws IOException {
+        tok = l.getTokens();
+        completo = new StringBuilder();
+        int valor = 0;
+
+        // Encabezado 3 columnas
+        String fmt = "%-26s %-12s %-20s\n"; // se cambio el formato
+        completo.append(String.format(fmt, "SIMBOLO (Token)", "LEXEMA", "PATRON"));
+        completo.append("-".repeat(63)).append("\n");
+        completo.append("<LINEA 1>\n");
+
+        for (int i = 0; i < tok.size(); i++) {
+
+            switch (tok.get(i).getTkns()) {
+
+                case Inter:
+                    completo.append(String.format(fmt, "<Reservado>", "inter", "/d[9]+"));
+                    break;
+
+                case Main:
+                    completo.append(String.format(fmt, "<Reservado>", "main", "/w{main}"));
+                    break;
+
+                case Finalizador:
+                    completo.append(String.format(fmt, "<Finalizador>", "$", "[$]"));
+                    break;
+
+                case Double:
+                    completo.append(String.format(fmt, "<Reservado>", "dec", "/d/./[9][8]"));
+                    break;
+
+                case Cad:
+                    completo.append(String.format(fmt, "<Reservado>", "cad", "'/w+/'"));
+                    break;
+
+                case Parentesis_a:
+                    completo.append(String.format(fmt, "<Parentesis_a>", "(", "[(]"));
+                    break;
+
+                case Parentesis_c:
+                    completo.append(String.format(fmt, "<Parentesis_c>", ")", "[)]"));
+                    break;
+
+                case Llave_a:
+                    completo.append(String.format(fmt, "<Llave_a>", "{", "[{]"));
+                    break;
+
+                case Llave_c:
+                    completo.append(String.format(fmt, "<Llave_c>", "}", "[}]"));
+                    break;
+
+                case Suma:
+                    completo.append(String.format(fmt, "<Operador Suma>", "+", "[+]"));
+                    break;
+
+                case Resta:
+                    completo.append(String.format(fmt, "<Operador Resta>", "-", "[-]"));
+                    break;
+
+                case Multiplicacion:
+                    completo.append(String.format(fmt, "<Operador Multiplicacion>", "*", "[*]"));
+                    break;
+
+                case Division:
+                    completo.append(String.format(fmt, "<Operador Division>", "/", "[/]"));
+                    break;
+
+                case Identificador:
+                    completo.append(String.format(fmt,
+                        "<Identificador>",
+                        tok.get(i).getLexema(),
+                        "[a-zA-Z][a-zA-Z0-9]*"));
+                    break;
+
+                case Numero:
+                    completo.append(String.format(fmt,
+                        "<Constante>",
+                        tok.get(i).getLexema(),
+                        "[0-9]+(.[0-9]+)?"));
+                    break;
+
+                case OperadorDecimal:
+                    completo.append(String.format(fmt,
+                        "<Operador Decimal>",
+                        tok.get(i).getLexema(),
+                        "[.]"));
+                    break;
+
+                case Igual:
+                    completo.append(String.format(fmt,
+                        "<Operador de asignacion>",
+                        tok.get(i).getLexema(),
+                        "[||]"));
+                    break;
+
+                case Comentarios:
+                    completo.append(String.format(fmt,
+                        "<Comentario>",
+                        tok.get(i).getLexema(),
+                        "//.*"));
+                    break;
+
+                case Linea:
+                    valor++;
+                    completo.append("\n<LINEA ").append(valor + 1).append(">\n");
+                    break;
+
+                case Comillas:
+                    completo.append(String.format(fmt,
+                        "<Cadena>",
+                        tok.get(i).getLexema(),
+                        "\"[a-zA-Z0-9 ]*\""));
+                    break;
+
+                default:
+                    completo.append(String.format(fmt,
+                        "<Sin definir>",
+                        tok.get(i).getTkns().toString(),
+                        "?"));
+                    break;
+            }
+        }
+
+        txtAnalizarLex.setText(completo.toString());
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
