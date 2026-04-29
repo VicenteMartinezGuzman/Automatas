@@ -10,6 +10,7 @@ import codigo.Tokens;
 import codigo.Token;
 import codigo.Lexico;
 import static codigo.Tokens.Cad;
+import static codigo.Tokens.Comentarios;
 import static codigo.Tokens.Division;
 import static codigo.Tokens.Double;
 import static codigo.Tokens.Finalizador;
@@ -57,6 +58,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         completo = new StringBuilder();
         int valor=0;
         completo.append("SIMBOLO             LEXEMA\n\n");
+        completo.append("<LINEA 1>\n");
         for (int i = 0; i < tok.size(); i++) {
             System.out.println(tok.size());
           switch (tok.get(i).getTkns()) {
@@ -106,13 +108,20 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 completo.append("<Constante>        "+tok.get(i).getLexema()+"\n");
                 break;
             case OperadorDecimal:
-                completo.append("<Constante>        "+tok.get(i).getLexema()+"\n");
+                completo.append("<Operador Decimal>        "+tok.get(i).getLexema()+"\n");
                 break;
             case Igual:
                 completo.append("<Operador de asignacion>        "+tok.get(i).getLexema()+"\n");
                 break;
             case Comentarios:
                 completo.append("<Signo Comentario>        "+tok.get(i).getLexema()+"\n");
+                break;
+            case Linea:
+                valor++;
+                completo.append("\n<LINEA " +(valor+1)+">\n");
+                break;
+            case Comillas:
+                completo.append("<Comillas>           "+tok.get(i).getLexema()+"\n");
                 break;
             default:
                 completo.append("<Sin definir>"+tok.get(i).getTkns()+"\n");;

@@ -3,8 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/codigo/sym.java</file>
             <file>file:/C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/Interfaz/FrmPrincipal.java</file>
+            <file>file:/C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/codigo/Tokens.java</file>
+            <file>file:/C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/codigo/sym.java</file>
+            <file>file:/C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/codigo/Token.java</file>
+            <file>file:/C:/Users/vicen/OneDrive/Documentos/NetBeansProjects/AnalizadorLexico/src/codigo/Lexico.java</file>
         </group>
     </open-files>
 </project-private>

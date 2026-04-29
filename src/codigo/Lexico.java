@@ -30,17 +30,19 @@ public class Lexico {
         StringBuilder signoIgual = new StringBuilder();
         while (i < linea.length()) {
             char c = linea.charAt(i);
-
-            // Ignorar espacios
-            if (Character.isWhitespace(c)&&c!='\n') {
-                i++;
-                continue;
-            }
-            if (c == '\r') {
-            System.out.println("Salto de línea detectado");
+            
+            if (c == '\n') {
+            tokens.add(new Token("\\n",sym.Linea, Tokens.Linea));
             i++;
             continue;
             }
+            
+            // Ignorar espacios
+            if (Character.isWhitespace(c)) {
+                i++;
+                continue;
+            }
+            
 
             // Símbolos especiales
             if (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c)) {
@@ -86,6 +88,9 @@ public class Lexico {
                         break;
                     case '#':
                         tokens.add(new Token("#", sym.Comentarios,Tokens.Comentarios));
+                        break;
+                    case '"':
+                        tokens.add(new Token("\"", sym.Comillas, Tokens.Comillas));
                         break;
                     default:
                         System.out.println("Símbolo no reconocido: " + c);
