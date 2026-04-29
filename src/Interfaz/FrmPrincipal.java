@@ -12,17 +12,24 @@ import codigo.Lexico;
 import codigo.Sintactico;
 import static codigo.Tokens.Cad;
 import static codigo.Tokens.Comentarios;
+import static codigo.Tokens.Comillas;
 import static codigo.Tokens.Division;
 import static codigo.Tokens.Double;
 import static codigo.Tokens.Finalizador;
+import static codigo.Tokens.Identificador;
 import static codigo.Tokens.Igual;
 import static codigo.Tokens.Inter;
+import static codigo.Tokens.Linea;
 import static codigo.Tokens.Llave_a;
 import static codigo.Tokens.Llave_c;
 import static codigo.Tokens.Main;
 import static codigo.Tokens.Multiplicacion;
 import static codigo.Tokens.Numero;
 import static codigo.Tokens.OperadorDecimal;
+import static codigo.Tokens.Parentesis_a;
+import static codigo.Tokens.Parentesis_c;
+import static codigo.Tokens.Resta;
+import static codigo.Tokens.Suma;
 import java.util.List;
 import java.util.ArrayList;;
 import java.awt.Color;
@@ -50,7 +57,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
     public FrmPrincipal() {
         initComponents();
         this.setLocationRelativeTo(null);
-        txtAnalizarLex.setFont(new java.awt.Font("Courier New", 0, 12));
+        txtAnalizarLex.setFont(new java.awt.Font("Courier New", 0, 12)); 
     }
 
     private void analizarLexico() throws IOException {
@@ -131,7 +138,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     completo.append(String.format(fmt,
                         "<Constante>",
                         tok.get(i).getLexema(),
-                        "[0-9]+(.[0-9]+)?"));
+                        "[0-9]+"));
                     break;
 
                 case OperadorDecimal:
