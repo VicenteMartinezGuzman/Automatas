@@ -17,6 +17,7 @@ public enum Tokens {
     OperadorDecimal,
     Inter,
     Double,
+    Dec,
     Cad,
     If,
     Else,

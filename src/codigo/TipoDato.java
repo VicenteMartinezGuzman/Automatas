@@ -4,8 +4,6 @@
  */
 package codigo;
 
-import java.io.IOException;
-
 /**
  *
  * @author vicen

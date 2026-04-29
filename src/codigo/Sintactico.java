@@ -95,17 +95,18 @@ public class Sintactico {
         }
 
         // cad
-        if (t.getTkns() == Tokens.Cad) {
-            resultado.append(analizarCad());
-            continue;
-        }
+        if (t.getTkns() == Tokens.Dec) {
+          resultado.append(analizarDec());
+           continue;
+          }
 
-        // dec (futuro)
+
+        // dec
         if (t.getTkns() == Tokens.Double) {
-            resultado.append("Error sintáctico línea " + linea + ": tipo 'dec' aún no soportado\n");
-            saltarHastaFinalizador();
-            continue;
-        }
+        resultado.append(analizarDec());
+        continue;
+         }
+
 
         // Instrucción inesperada dentro del cuerpo
         resultado.append("Error sintáctico línea " + linea
@@ -262,7 +263,7 @@ private void saltarLineas() {
     return izquierdo;
 }
 
-private TipoDato obtenerValorInter(int lineaInstruccion) throws Exception {
+    private TipoDato obtenerValorInter(int lineaInstruccion) throws Exception {
     if (i >= tokens.size()) {
         throw new Exception("Error semántico línea " + lineaInstruccion
                 + ": se esperaba un valor pero la expresión terminó inesperadamente");
@@ -375,7 +376,207 @@ private TipoDato obtenerValorInter(int lineaInstruccion) throws Exception {
     throw new Exception("Error semántico línea " + lineaInstruccion
             + ": token inesperado '" + t.getLexema() + "' en la expresión entera");
 }
+    // ══════════════════════════════════════════════════════
+//  DEC
+// ══════════════════════════════════════════════════════
+private String analizarDec() {
+    int lineaInstruccion = linea;
+    i++; // saltar 'dec'
 
+    // 1. Debe seguir un identificador
+    if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
+        saltarHastaFinalizador();
+        return "Error sintáctico línea " + lineaInstruccion
+                + ": se esperaba un identificador después de 'dec'\n";
+    }
+
+    if (tokens.get(i).getTkns() != Tokens.Identificador) {
+        String encontrado = tokens.get(i).getLexema();
+        saltarHastaFinalizador();
+        return "Error sintáctico línea " + lineaInstruccion
+                + ": identificador inválido '" + encontrado + "' después de 'dec'\n";
+    }
+
+    String nombreVar = tokens.get(i).getLexema();
+
+    // 2. No puede ser palabra reservada
+    if (esReservada(nombreVar)) {
+        saltarHastaFinalizador();
+        return "Error semántico línea " + lineaInstruccion
+                + ": '" + nombreVar + "' es una palabra reservada\n";
+    }
+
+    // 3. Variable ya declarada
+    if (tablaVariables.containsKey(nombreVar)) {
+        saltarHastaFinalizador();
+        return "Error semántico línea " + lineaInstruccion
+                + ": variable '" + nombreVar + "' ya fue declarada anteriormente\n";
+    }
+
+    i++; // saltar identificador
+
+    // 4. Debe seguir ||
+    if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Igual) {
+        String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
+        saltarHastaFinalizador();
+        return "Error sintáctico línea " + lineaInstruccion
+                + ": se esperaba '||' pero se encontró '" + encontrado + "'\n";
+    }
+    i++; // saltar ||
+
+    // 5. Expresión no puede estar vacía
+    if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
+        saltarHastaFinalizador();
+        return "Error semántico línea " + lineaInstruccion
+                + ": expresión vacía en la asignación de '" + nombreVar + "'\n";
+    }
+
+    // 6. No puede asignarse cadena a dec
+    if (tokens.get(i).getTkns() == Tokens.Comillas) {
+        saltarHastaFinalizador();
+        return "Error semántico línea " + lineaInstruccion
+                + ": no se puede asignar una cadena a la variable decimal '" + nombreVar + "'\n";
+    }
+
+    // 7. Evaluar expresión decimal
+    try {
+        TipoDato resultado = evaluarExpresionDec(lineaInstruccion);
+
+        // 8. Debe terminar con $
+        if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
+            String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
+            saltarHastaFinalizador();
+            return "Error sintáctico línea " + lineaInstruccion
+                    + ": se esperaba '$' al final pero se encontró '" + encontrado + "'\n";
+        }
+        i++; // saltar $
+
+        tablaVariables.put(nombreVar, resultado);
+        Dec decResultado = (Dec) resultado;
+        return nombreVar + "=" + decResultado.getValor() + ", sin error semántico\n";
+
+    } catch (Exception e) {
+        saltarHastaFinalizador();
+        return e.getMessage() + "\n";
+    }
+}
+
+private TipoDato evaluarExpresionDec(int lineaInstruccion) throws Exception {
+    TipoDato izquierdo = obtenerValorDec(lineaInstruccion);
+
+    while (i < tokens.size() && esOperador(tokens.get(i).getTkns())) {
+        Tokens operador = tokens.get(i).getTkns();
+        i++;
+
+        if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
+            throw new Exception("Error semántico línea " + lineaInstruccion
+                    + ": expresión incompleta, falta operando después de '"
+                    + operadorAString(operador) + "'");
+        }
+
+        if (tokens.get(i).getTkns() == Tokens.Comillas) {
+            throw new Exception("Error semántico línea " + lineaInstruccion
+                    + ": no se puede operar un decimal con una cadena");
+        }
+
+        TipoDato derecho = obtenerValorDec(lineaInstruccion);
+
+        // Usar métodos de tu clase Dec
+        switch (operador) {
+            case Suma:           izquierdo = izquierdo.sumar(derecho);        break;
+            case Resta:          izquierdo = izquierdo.restar(derecho);       break;
+            case Multiplicacion: izquierdo = izquierdo.multiplicar(derecho);  break;
+            case Division:       izquierdo = izquierdo.dividir(derecho);      break;
+            default: throw new Exception("Error semántico línea " + lineaInstruccion
+                    + ": operador desconocido");
+        }
+    }
+
+    return izquierdo;
+}
+
+private TipoDato obtenerValorDec(int lineaInstruccion) throws Exception {
+    if (i >= tokens.size()) {
+        throw new Exception("Error semántico línea " + lineaInstruccion
+                + ": se esperaba un valor decimal pero la expresión terminó");
+    }
+
+    Token t = tokens.get(i);
+
+    // ── Menos unario: -3.14 ───────────────────────────────────────────────
+    if (t.getTkns() == Tokens.Resta) {
+        i++;
+        double num = leerNumeroDec(lineaInstruccion);
+        return new Dec(-num);
+    }
+
+    // ── Número decimal o entero positivo ─────────────────────────────────
+    if (t.getTkns() == Tokens.Numero || t.getTkns() == Tokens.OperadorDecimal) {
+        double num = leerNumeroDec(lineaInstruccion);
+        return new Dec(num);
+    }
+
+    // ── Variable dec ya declarada ─────────────────────────────────────────
+    if (t.getTkns() == Tokens.Identificador) {
+        i++;
+        if (!tablaVariables.containsKey(t.getLexema())) {
+            throw new Exception("Error semántico línea " + lineaInstruccion
+                    + ": variable '" + t.getLexema() + "' no ha sido declarada");
+        }
+        TipoDato var = tablaVariables.get(t.getLexema());
+        if (!(var instanceof Dec)) {
+            throw new Exception("Error semántico línea " + lineaInstruccion
+                    + ": la variable '" + t.getLexema() + "' no es de tipo 'dec'");
+        }
+        return var;
+    }
+
+    // ── Cadena en expresión decimal ───────────────────────────────────────
+    if (t.getTkns() == Tokens.Comillas) {
+        throw new Exception("Error semántico línea " + lineaInstruccion
+                + ": no se puede usar una cadena en una expresión decimal");
+    }
+
+    throw new Exception("Error semántico línea " + lineaInstruccion
+            + ": token inesperado '" + t.getLexema() + "' en expresión decimal");
+}
+
+// Lee entero o decimal: 3  /  3.14  /  .5
+private double leerNumeroDec(int lineaInstruccion) throws Exception {
+    StringBuilder sb = new StringBuilder();
+
+    // Parte entera
+    if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Numero) {
+        sb.append(tokens.get(i).getLexema());
+        i++;
+    }
+
+    // Punto decimal
+    if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.OperadorDecimal) {
+        sb.append('.');
+        i++;
+        // Parte fraccionaria
+        if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Numero) {
+            sb.append(tokens.get(i).getLexema());
+            i++;
+        } else {
+            throw new Exception("Error semántico línea " + lineaInstruccion
+                    + ": se esperaba dígitos después del '.'");
+        }
+    }
+
+    if (sb.length() == 0) {
+        throw new Exception("Error semántico línea " + lineaInstruccion
+                + ": número decimal inválido");
+    }
+
+    try {
+        return Double.parseDouble(sb.toString());
+    } catch (NumberFormatException e) {
+        throw new Exception("Error semántico línea " + lineaInstruccion
+                + ": formato decimal inválido '" + sb + "'");
+    }
+}
     // ══════════════════════════════════════════════════════
     //  CAD
     // ══════════════════════════════════════════════════════

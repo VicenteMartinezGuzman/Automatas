@@ -87,7 +87,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     completo.append(String.format(fmt, "<Finalizador>", "$", "[$]"));
                     break;
 
-                case Double:
+                case Dec:
                     completo.append(String.format(fmt, "<Reservado>", "dec", "/d/./[9][8]"));
                     break;
 
