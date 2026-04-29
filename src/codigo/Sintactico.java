@@ -95,8 +95,8 @@ public class Sintactico {
         }
 
         // cad
-        if (t.getTkns() == Tokens.Dec) {
-          resultado.append(analizarDec());
+        if (t.getTkns() == Tokens.Cad) {
+          resultado.append(analizarCad());
            continue;
           }
 
@@ -642,7 +642,7 @@ private double leerNumeroDec(int lineaInstruccion) throws Exception {
         if (tokens.get(i).getTkns() == Tokens.Numero) {
             saltarHastaFinalizador();
             return "Error semántico línea " + lineaInstruccion 
-                    + ": no se puede asignar un número entero a la variable 'cad' '" + nombreVar + "'\n";
+                    + ": no se puede asignar un número entero a la variable '" + nombreVar + "'\n";
         }
 
         // 7. No puede asignarse decimal a cad

@@ -151,7 +151,7 @@ public class Lexico {
                         tokens.add(new Token(palabra, sym.Dec,Tokens.Double));
                         break;
                     case "cad":
-                        tokens.add(new Token(palabra, sym.Dec, Tokens.Dec));
+                        tokens.add(new Token(palabra, sym.Cadena, Tokens.Cad));
                         break;
                     default:
                         tokens.add(new Token(palabra, sym.Identificador,Tokens.Identificador));
