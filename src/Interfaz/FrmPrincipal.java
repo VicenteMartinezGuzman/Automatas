@@ -18,6 +18,7 @@ import static codigo.Tokens.Double;
 import static codigo.Tokens.Finalizador;
 import static codigo.Tokens.Identificador;
 import static codigo.Tokens.Igual;
+import static codigo.Tokens.Incremento;
 import static codigo.Tokens.Inter;
 import static codigo.Tokens.Linea;
 import static codigo.Tokens.Llave_a;
@@ -114,7 +115,13 @@ public class FrmPrincipal extends javax.swing.JFrame {
                 case Suma:
                     completo.append(String.format(fmt, "<Operador Suma>", "+", "[+]"));
                     break;
-
+                
+                case Incremento:
+                    completo.append(String.format(fmt, "<Operador de Incremento>", "++", "[++]"));
+                    break;
+                case Decremento:
+                    completo.append(String.format(fmt, "<Operador de Decremento>", "--", "[--]"));
+                    break;
                 case Resta:
                     completo.append(String.format(fmt, "<Operador Resta>", "-", "[-]"));
                     break;

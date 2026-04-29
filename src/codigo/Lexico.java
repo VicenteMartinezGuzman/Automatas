@@ -64,10 +64,20 @@ public class Lexico {
                         tokens.add(new Token("$", sym.Finalizador,Tokens.Finalizador));
                         break;
                     case '+':
-                        tokens.add(new Token("+", sym.Suma,Tokens.Suma));
+                        if (i + 1 < linea.length() && linea.charAt(i + 1) == '+') {
+                        tokens.add(new Token("++", sym.Incremento, Tokens.Incremento));
+                        i++; // saltar el segundo +
+                         } else {
+                        tokens.add(new Token("+", sym.Suma, Tokens.Suma));
+                        }
                         break;
                     case '-':
-                        tokens.add(new Token("-", sym.Resta,Tokens.Resta));
+                        if (i + 1 < linea.length() && linea.charAt(i + 1) == '-') {
+                        tokens.add(new Token("--", sym.Decremento, Tokens.Decremento));
+                        i++; // saltar el segundo -
+                        } else {
+                        tokens.add(new Token("-", sym.Resta, Tokens.Resta));
+                        }
                         break;
                     case '*':
                         tokens.add(new Token("*", sym.Multiplicacion,Tokens.Multiplicacion));

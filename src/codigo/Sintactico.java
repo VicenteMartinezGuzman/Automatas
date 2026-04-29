@@ -106,7 +106,11 @@ public class Sintactico {
         resultado.append(analizarDec());
         continue;
          }
-
+        // incremento / decremento
+        if (t.getTkns() == Tokens.Identificador) {
+         resultado.append(analizarIncDec());
+        continue;
+         }
 
         // Instrucción inesperada dentro del cuerpo
         resultado.append("Error sintáctico línea " + linea
@@ -725,6 +729,90 @@ private double leerNumeroDec(int lineaInstruccion) throws Exception {
         return nombreVar + "=\"" + cadena.getValor() + "\", sin error semántico\n";
     }
 
+    private String analizarIncDec() {
+    int lineaInstruccion = linea;
+
+    String nombreVar = tokens.get(i).getLexema();
+
+    // 1. Verificar que exista
+    if (!tablaVariables.containsKey(nombreVar)) {
+        saltarHastaFinalizador();
+        return "Error semántico línea " + lineaInstruccion
+                + ": variable '" + nombreVar + "' no ha sido declarada\n";
+    }
+
+    TipoDato var = tablaVariables.get(nombreVar);
+
+    // 2. Solo aplica a inter y dec
+    if (!(var instanceof Inter) && !(var instanceof Dec)) {
+        saltarHastaFinalizador();
+        return "Error semántico línea " + lineaInstruccion
+                + ": incremento/decremento solo válido para 'inter' y 'dec'\n";
+    }
+
+    i++; // saltar identificador
+
+    if (i >= tokens.size()) {
+        return "Error sintáctico línea " + lineaInstruccion
+                + ": se esperaba '++' o '--'\n";
+    }
+
+    Tokens op = tokens.get(i).getTkns();
+
+    // 3. Validar operador
+    if (op != Tokens.Incremento && op != Tokens.Decremento) {
+        return "Error sintáctico línea " + lineaInstruccion
+                + ": se esperaba '++' o '--'\n";
+    }
+
+    i++; // saltar ++ o --
+
+    // 4. Debe terminar en $
+    if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
+        return "Error sintáctico línea " + lineaInstruccion
+                + ": se esperaba '$' al final\n";
+    }
+
+    i++; // saltar $
+
+    // 5. Aplicar operación
+    if (var instanceof Inter) {
+        Inter interVar = (Inter) var;
+
+        int nuevoValor = interVar.getValor();
+
+        if (op == Tokens.Incremento) {
+            nuevoValor++;
+        } else {
+            nuevoValor--;
+        }
+
+        tablaVariables.put(nombreVar, new Inter(nuevoValor));
+
+        return nombreVar + "=" + nuevoValor + ", sin error semántico\n";
+    }
+
+    if (var instanceof Dec) {
+        Dec decVar = (Dec) var;
+
+        double nuevoValor = decVar.getValor();
+
+        if (op == Tokens.Incremento) {
+            nuevoValor++;
+        } else {
+            nuevoValor--;
+        }
+
+        tablaVariables.put(nombreVar, new Dec(nuevoValor));
+
+        return nombreVar + "=" + nuevoValor + ", sin error semántico\n";
+    }
+
+    return "";
+}
+    
+    
+    
     // ══════════════════════════════════════════════════════
     //  UTILIDADES
     // ══════════════════════════════════════════════════════
