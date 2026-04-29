@@ -19,8 +19,8 @@ public class Sintactico {
     private int linea; // rastrear línea actual
 
     // Límite de 6 dígitos para inter
-    private static final int MAX_INTER = 999999;
-    private static final int MIN_INTER = -999999;
+    private static final int MAX_INTER = 999999999;
+    private static final int MIN_INTER = -999999999;
 
     public Sintactico() {
         tablaVariables = new HashMap<>();
@@ -332,19 +332,31 @@ private void saltarLineas() {
 
     // ── Número positivo ───────────────────────────────────────────────────
     if (t.getTkns() == Tokens.Numero) {
-        i++;
-        try {
-            int num = Integer.parseInt(t.getLexema());
-            if (num > MAX_INTER) {
-                throw new Exception("Error semántico línea " + lineaInstruccion
-                        + ": el número " + num + " excede el límite de 6 dígitos (máx: 999999)");
-            }
-            return new Inter(num);
-        } catch (NumberFormatException e) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": número inválido '" + t.getLexema() + "'");
-        }
+
+    String lexema = t.getLexema();
+
+    // ✅ VALIDAR LONGITUD (9 dígitos)
+    if (lexema.length() > 9) {
+        throw new Exception("Error semántico línea " + lineaInstruccion
+                + ": el número excede los 9 dígitos permitidos");
     }
+
+    i++;
+    try {
+        int num = Integer.parseInt(lexema);
+
+        if (num > MAX_INTER || num < MIN_INTER) {
+            throw new Exception("Error semántico línea " + lineaInstruccion
+                    + ": el número " + num + " está fuera del rango permitido");
+        }
+
+        return new Inter(num);
+
+    } catch (NumberFormatException e) {
+        throw new Exception("Error semántico línea " + lineaInstruccion
+                + ": número inválido '" + lexema + "'");
+    }
+}
 
     // ── Variable ──────────────────────────────────────────────────────────
     if (t.getTkns() == Tokens.Identificador) {
@@ -543,21 +555,25 @@ private TipoDato obtenerValorDec(int lineaInstruccion) throws Exception {
 
 // Lee entero o decimal: 3  /  3.14  /  .5
 private double leerNumeroDec(int lineaInstruccion) throws Exception {
-    StringBuilder sb = new StringBuilder();
+    StringBuilder parteEntera = new StringBuilder();
+    StringBuilder parteDecimal = new StringBuilder();
 
-    // Parte entera
+    // ── Parte entera ─────────────────────────────
     if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Numero) {
-        sb.append(tokens.get(i).getLexema());
+        parteEntera.append(tokens.get(i).getLexema());
         i++;
     }
 
-    // Punto decimal
+    // ── Punto decimal ────────────────────────────
+    boolean tienePunto = false;
+
     if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.OperadorDecimal) {
-        sb.append('.');
+        tienePunto = true;
         i++;
-        // Parte fraccionaria
+
+        // ── Parte decimal ────────────────────────
         if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Numero) {
-            sb.append(tokens.get(i).getLexema());
+            parteDecimal.append(tokens.get(i).getLexema());
             i++;
         } else {
             throw new Exception("Error semántico línea " + lineaInstruccion
@@ -565,19 +581,36 @@ private double leerNumeroDec(int lineaInstruccion) throws Exception {
         }
     }
 
-    if (sb.length() == 0) {
+    // ── Validaciones 🔥 ─────────────────────────
+
+    // 👉 máximo 8 dígitos en parte entera
+    if (parteEntera.length() > 9) {
         throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": número decimal inválido");
+                + ": la parte entera excede 8 dígitos");
+    }
+
+    // 👉 máximo 2 dígitos en parte decimal
+    if (parteDecimal.length() > 8) {
+        throw new Exception("Error semántico línea " + lineaInstruccion
+                + ": la parte decimal excede 2 dígitos");
+    }
+
+    // ── Construcción del número ────────────────
+    String numeroStr;
+
+    if (tienePunto) {
+        numeroStr = parteEntera + "." + parteDecimal;
+    } else {
+        numeroStr = parteEntera.toString();
     }
 
     try {
-        return Double.parseDouble(sb.toString());
+        return Double.parseDouble(numeroStr);
     } catch (NumberFormatException e) {
         throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": formato decimal inválido '" + sb + "'");
+                + ": formato decimal inválido '" + numeroStr + "'");
     }
-}
-    // ══════════════════════════════════════════════════════
+}    // ══════════════════════════════════════════════════════
     //  CAD
     // ══════════════════════════════════════════════════════
     private String analizarCad() {
