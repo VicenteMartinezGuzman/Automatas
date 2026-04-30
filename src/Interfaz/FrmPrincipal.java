@@ -67,106 +67,108 @@ public class FrmPrincipal extends javax.swing.JFrame {
         int valor = 0;
 
         // Encabezado 3 columnas
-        String fmt = "%-26s %-12s %-20s\n"; // se cambio el formato
-        completo.append(String.format(fmt, "SIMBOLO (Token)", "LEXEMA", "PATRON"));
-        completo.append("-".repeat(63)).append("\n");
-        completo.append("<LINEA 1>\n");
+        String fmt = "%-26s %-15s %-20s %-10s\n";
+    completo.append("Tabla de Tokens\n\n");
+    completo.append(String.format(fmt, "TOKEN", "LEXEMA", "PATRON", "RESERVADA"));
+    completo.append("-".repeat(75)).append("\n");
+    completo.append("<LINEA 1>\n");
 
         for (int i = 0; i < tok.size(); i++) {
 
             switch (tok.get(i).getTkns()) {
 
                 case Inter:
-                    completo.append(String.format(fmt, "<Reservado>", "inter", "/d[9]+"));
+                    completo.append(String.format(fmt, "inter", "inter", "/d[9]+", "SI"));
                     break;
 
                 case Main:
-                    completo.append(String.format(fmt, "<Reservado>", "main", "/w{main}"));
+                    completo.append(String.format(fmt, "main", "main", "/w{main}", "SI"));
                     break;
 
                 case Finalizador:
-                    completo.append(String.format(fmt, "<Finalizador>", "$", "[$]"));
+                    completo.append(String.format(fmt, "$", "$", "[$]","SI"));
                     break;
 
                 case Double:
-                    completo.append(String.format(fmt, "<Reservado>", "dec", "/d/./[9][8]"));
+                    completo.append(String.format(fmt, "dec", "dec", "/d/./[9][8]", "SI"));
                     break;
 
                 case Cad:
-                    completo.append(String.format(fmt, "<Reservado>", "cad", "'/w+/'"));
+                    completo.append(String.format(fmt, "cad", "cad", "'/w+/'", "SI"));
                     break;
 
                 case Parentesis_a:
-                    completo.append(String.format(fmt, "<Parentesis_a>", "(", "[(]"));
+                    completo.append(String.format(fmt, "(", "(", "[(]","NO"));
                     break;
 
                 case Parentesis_c:
-                    completo.append(String.format(fmt, "<Parentesis_c>", ")", "[)]"));
+                    completo.append(String.format(fmt, ")", ")", "[)]","NO"));
                     break;
 
                 case Llave_a:
-                    completo.append(String.format(fmt, "<Llave_a>", "{", "[{]"));
+                    completo.append(String.format(fmt, "{", "{", "[{]","NO"));
                     break;
 
                 case Llave_c:
-                    completo.append(String.format(fmt, "<Llave_c>", "}", "[}]"));
+                    completo.append(String.format(fmt, "}", "}", "[}]","NO"));
                     break;
 
                 case Suma:
-                    completo.append(String.format(fmt, "<Operador Suma>", "+", "[+]"));
+                    completo.append(String.format(fmt, "+", "+", "[+]","NO"));
                     break;
                 
                 case Incremento:
-                    completo.append(String.format(fmt, "<Operador de Incremento>", "++", "[++]"));
+                    completo.append(String.format(fmt, "++", "++", "[++]","NO"));
                     break;
                 case Decremento:
-                    completo.append(String.format(fmt, "<Operador de Decremento>", "--", "[--]"));
+                    completo.append(String.format(fmt, "--", "--", "[--]","NO"));
                     break;
                 case Resta:
-                    completo.append(String.format(fmt, "<Operador Resta>", "-", "[-]"));
+                    completo.append(String.format(fmt, "-", "-", "[-]","NO"));
                     break;
 
                 case Multiplicacion:
-                    completo.append(String.format(fmt, "<Operador Multiplicacion>", "*", "[*]"));
+                    completo.append(String.format(fmt, "*", "*", "[*]","NO"));
                     break;
 
                 case Division:
-                    completo.append(String.format(fmt, "<Operador Division>", "/", "[/]"));
+                    completo.append(String.format(fmt, "/", "/", "[/]","NO"));
                     break;
 
                 case Identificador:
                     completo.append(String.format(fmt,
-                        "<Identificador>",
-                        tok.get(i).getLexema(),
-                        "[a-zA-Z][a-zA-Z0-9]*"));
+                            tok.get(i).getLexema(),
+                            tok.get(i).getLexema(),
+                            "[a-zA-Z][a-zA-Z0-9]*",
+                            "NO"));
                     break;
-
                 case Numero:
                     completo.append(String.format(fmt,
-                        "<Constante>",
-                        tok.get(i).getLexema(),
-                        "[0-9]+"));
+                            tok.get(i).getLexema(),  // ← aquí el cambio
+                            tok.get(i).getLexema(),
+                            "[0-9]+",
+                            "NO"));
                     break;
 
                 case OperadorDecimal:
                     completo.append(String.format(fmt,
-                        "<Operador Decimal>",
+                        ".",
                         tok.get(i).getLexema(),
-                        "[.]"));
+                        "[.]", "NO"));
                     break;
 
                 case Igual:
                     completo.append(String.format(fmt,
-                        "<Operador de asignacion>",
+                        "||",
                         tok.get(i).getLexema(),
-                        "[||]"));
+                        "[||]", "SI"));
                     break;
 
                 case Comentarios:
                     completo.append(String.format(fmt,
-                        "<Comentario>",
+                        "//.*",
                         tok.get(i).getLexema(),
-                        "//.*"));
+                        "//.*", "NO"));
                     break;
 
                 case Linea:
@@ -178,7 +180,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     completo.append(String.format(fmt,
                         "<Cadena>",
                         tok.get(i).getLexema(),
-                        "\"[a-zA-Z0-9 ]*\""));
+                        "\"[a-zA-Z0-9 ]*\"", "NO"));
                     break;
 
                 default:
