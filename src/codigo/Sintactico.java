@@ -42,7 +42,7 @@ public class Sintactico {
         tablaVariables.clear();
         i = 0;
         linea = 1;
- 
+        
         saltarLineasYComentarios();
  
         if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Main) {
