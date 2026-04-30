@@ -8,819 +8,971 @@
  */
 package codigo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class Sintactico {
-
+ 
     private List<Token> tokens;
     private HashMap<String, TipoDato> tablaVariables;
     private int i;
-    private int linea; // rastrear línea actual
-
-    // Límite de 6 dígitos para inter
+    private int linea;
+ 
     private static final int MAX_INTER = 999999999;
     private static final int MIN_INTER = -999999999;
-
+ 
     public Sintactico() {
         tablaVariables = new HashMap<>();
     }
-
+ 
     public void setTokens(List<Token> tokens) {
         this.tokens = tokens;
     }
-
-    public String analizar() {
-    if (tokens == null || tokens.isEmpty()) {
-        return "Primero analiza léxicamente el código.";
-    }
-
-    StringBuilder resultado = new StringBuilder();
-    tablaVariables.clear();
-    i = 0;
-    linea = 1;
-
-    // ── 1. Debe empezar con main ──────────────────────────────────────────
-    saltarLineas();
-    if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Main) {
-        return "Error sintáctico línea " + linea + ": se esperaba 'main' al inicio del programa\n";
-    }
-    i++; // saltar main
-
-    // ── 2. Debe seguir ( ──────────────────────────────────────────────────
-    if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Parentesis_a) {
-        return "Error sintáctico línea " + linea + ": se esperaba '(' después de 'main'\n";
-    }
-    i++; // saltar (
-
-    // ── 3. Debe seguir ) ──────────────────────────────────────────────────
-    if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Parentesis_c) {
-        return "Error sintáctico línea " + linea + ": se esperaba ')' después de '('\n";
-    }
-    i++; // saltar )
-
-    // ── 4. Debe seguir { ──────────────────────────────────────────────────
-    if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Llave_a) {
-        return "Error sintáctico línea " + linea + ": se esperaba '{' después de 'main()'\n";
-    }
-    i++; // saltar {
-
-    // ── 5. Analizar cuerpo del programa ───────────────────────────────────
-    while (i < tokens.size()) {
-        saltarLineas();
-
-        if (i >= tokens.size()) break;
-
-        Token t = tokens.get(i);
-
-        // Fin del programa con }
-        if (t.getTkns() == Tokens.Llave_c) {
-            i++; // saltar }
-
-            // 6. No debe haber nada después del }
-            saltarLineas();
-            if (i < tokens.size()) {
-                resultado.append("Error sintáctico línea " + linea 
-                        + ": no se esperaba '" + tokens.get(i).getLexema() 
-                        + "' después del cierre '}'\n");
-            }
-
-            return resultado.toString();
-        }
-
-        // inter
-        if (t.getTkns() == Tokens.Inter) {
-            resultado.append(analizarInter());
-            continue;
-        }
-
-        // cad
-        if (t.getTkns() == Tokens.Cad) {
-          resultado.append(analizarCad());
-           continue;
-          }
-
-
-        // dec
-        if (t.getTkns() == Tokens.Double) {
-        resultado.append(analizarDec());
-        continue;
-         }
-        // incremento / decremento
-        if (t.getTkns() == Tokens.Identificador) {
-         resultado.append(analizarIncDec());
-        continue;
-         }
-
-        // Instrucción inesperada dentro del cuerpo
-        resultado.append("Error sintáctico línea " + linea
-                + ": instrucción inválida '" + t.getLexema() + "' dentro de main\n");
-        saltarHastaFinalizador();
-    }
-
-    // Si llegamos aquí sin encontrar } es un error
-    resultado.append("Error sintáctico línea " + linea + ": se esperaba '}' para cerrar 'main'\n");
-    return resultado.toString();
-}
-
-// ── Método auxiliar para saltar tokens de línea ───────────────────────────
-private void saltarLineas() {
-    while (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Linea) {
-        linea++;
-        i++;
-    }
-}
-
+ 
     // ══════════════════════════════════════════════════════
-    //  INTER
+    //  PUNTO DE ENTRADA
+    // ══════════════════════════════════════════════════════
+    public String analizar() {
+        if (tokens == null || tokens.isEmpty()) {
+            return "Primero analiza léxicamente el código.";
+        }
+ 
+        StringBuilder resultado = new StringBuilder();
+        tablaVariables.clear();
+        i = 0;
+        linea = 1;
+ 
+        saltarLineasYComentarios();
+ 
+        if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Main) {
+            return "Error sintáctico línea " + linea + ": se esperaba 'main' al inicio del programa.\n";
+        }
+        i++;
+ 
+        if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Parentesis_a) {
+            return "Error sintáctico línea " + linea + ": se esperaba '(' después de 'main'.\n";
+        }
+        i++;
+ 
+        if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Parentesis_c) {
+            return "Error sintáctico línea " + linea + ": se esperaba ')' después de '('.\n";
+        }
+        i++;
+ 
+        if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Llave_a) {
+            return "Error sintáctico línea " + linea + ": se esperaba '{' después de 'main()'.\n";
+        }
+        i++;
+ 
+        while (i < tokens.size()) {
+            saltarLineasYComentarios();
+            if (i >= tokens.size()) break;
+ 
+            Token t = tokens.get(i);
+ 
+            if (t.getTkns() == Tokens.Llave_c) {
+                i++;
+                saltarLineasYComentarios();
+                if (i < tokens.size()) {
+                    resultado.append("Error sintáctico línea ").append(linea)
+                             .append(": token inesperado '").append(tokens.get(i).getLexema())
+                             .append("' después del cierre '}'; el programa ya terminó.\n");
+                }
+                return resultado.toString();
+            }
+ 
+            if (t.getTkns() == Tokens.Inter)         { resultado.append(analizarInter());         continue; }
+            if (t.getTkns() == Tokens.Cad)           { resultado.append(analizarCad());           continue; }
+            if (t.getTkns() == Tokens.Double)        { resultado.append(analizarDec());           continue; }
+            if (t.getTkns() == Tokens.Identificador) { resultado.append(analizarIdentificador()); continue; }
+ 
+            resultado.append("Error sintáctico línea ").append(linea)
+                     .append(": instrucción inválida '").append(t.getLexema())
+                     .append("' dentro de main; se esperaba 'inter', 'dec', 'cad' o una variable.\n");
+            saltarHastaFinalizador();
+        }
+ 
+        resultado.append("Error sintáctico línea ").append(linea)
+                 .append(": se esperaba '}' para cerrar el bloque 'main'.\n");
+        return resultado.toString();
+    }
+ 
+    // ── Saltar líneas y comentarios ───────────────────────────────────────────
+    private void saltarLineasYComentarios() {
+        while (i < tokens.size()) {
+            Tokens tkn = tokens.get(i).getTkns();
+            if (tkn == Tokens.Linea) {
+                linea++;
+                i++;
+            } else if (tkn == Tokens.Comentarios) {
+                i++;
+            } else {
+                break;
+            }
+        }
+    }
+ 
+    // ══════════════════════════════════════════════════════
+    //  INTER  (declaración)
     // ══════════════════════════════════════════════════════
     private String analizarInter() {
-        int lineaInstruccion = linea;
+        int li = linea;
         i++; // saltar 'inter'
-
-        // 1. Debe seguir un identificador
+ 
         if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
             saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion 
-                    + ": se esperaba un identificador después de 'inter'\n";
+            return "Error sintáctico línea " + li
+                    + ": se esperaba el nombre de la variable después de 'inter' (ej: inter x||5$).\n";
         }
-
+ 
+        if (tokens.get(i).getTkns() == Tokens.Numero) {
+            String num = tokens.get(i).getLexema();
+            saltarHastaFinalizador();
+            return "Error sintáctico línea " + li
+                    + ": el nombre de variable no puede ser un número ('" + num + "'); "
+                    + "use letras (ej: inter x||" + num + "$).\n";
+        }
+ 
         if (tokens.get(i).getTkns() != Tokens.Identificador) {
             String encontrado = tokens.get(i).getLexema();
             saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion 
-                    + ": identificador inválido '" + encontrado + "' después de 'inter'\n";
+            return "Error sintáctico línea " + li
+                    + ": nombre de variable inválido '" + encontrado + "' después de 'inter'; "
+                    + "solo se permiten letras y dígitos (sin comenzar con dígito).\n";
         }
-
+ 
         String nombreVar = tokens.get(i).getLexema();
-
-        // 2. El identificador no puede ser palabra reservada
+ 
         if (esReservada(nombreVar)) {
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": '" + nombreVar + "' es una palabra reservada, no puede ser identificador\n";
+            return "Error semántico línea " + li
+                    + ": '" + nombreVar + "' es una palabra reservada del lenguaje; "
+                    + "no puede usarse como nombre de variable.\n";
         }
-
-        // 3. Variable ya declarada
+ 
         if (tablaVariables.containsKey(nombreVar)) {
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": variable '" + nombreVar + "' ya fue declarada anteriormente\n";
+            return "Error semántico línea " + li
+                    + ": variable '" + nombreVar + "' ya fue declarada anteriormente; "
+                    + "no se permite redeclarar variables.\n";
         }
-
-        i++; // saltar identificador
-
-        // 4. Debe seguir ||
+ 
+        i++;
+ 
         if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
             saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion 
-                    + ": se esperaba '||' después de '" + nombreVar + "'\n";
+            return "Error sintáctico línea " + li
+                    + ": es necesario inicializar la variable '" + nombreVar
+                    + "'; ejemplo: inter " + nombreVar + "||0$\n";
         }
-
+ 
         if (tokens.get(i).getTkns() != Tokens.Igual) {
             String encontrado = tokens.get(i).getLexema();
             saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion 
-                    + ": se esperaba '||' pero se encontró '" + encontrado + "'\n";
+            return "Error sintáctico línea " + li
+                    + ": se esperaba '||' pero se encontró '" + encontrado + "'. "
+                    + "Recuerde: la asignación usa '||', no '='.\n";
         }
-        i++; // saltar ||
-
-        // 5. Expresión no puede estar vacía
+        i++;
+ 
         if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": expresión vacía en la asignación de '" + nombreVar + "'\n";
+            return "Error semántico línea " + li
+                    + ": falta el valor en la asignación de '" + nombreVar
+                    + "'. Ejemplo válido: inter " + nombreVar + "||42$\n";
         }
-
-        // 6. No puede asignarse una cadena a inter
+ 
         if (tokens.get(i).getTkns() == Tokens.Comillas) {
+            String cadena = tokens.get(i).getLexema();
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": no se puede asignar una cadena de texto a la variable entera '" + nombreVar + "'\n";
+            return "Error semántico línea " + li
+                    + ": tipo incorrecto; no se puede asignar la cadena " + cadena
+                    + " a la variable entera '" + nombreVar + "'. Use 'cad' para cadenas.\n";
         }
-
-        // 7. Evaluar expresión
+ 
+        if (tokens.get(i).getTkns() == Tokens.Multiplicacion
+                || tokens.get(i).getTkns() == Tokens.Division) {
+            String op = tokens.get(i).getLexema();
+            saltarHastaFinalizador();
+            return "Error semántico línea " + li
+                    + ": la expresión de '" + nombreVar + "' no puede comenzar con '" + op + "'.\n";
+        }
+ 
         try {
-            TipoDato resultado = evaluarExpresionInter(lineaInstruccion);
-
-            // 8. Debe terminar con $
+            TipoDato resultado = evaluarExpresionInter(li);
+ 
             if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
                 String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
                 saltarHastaFinalizador();
-                return "Error sintáctico línea " + lineaInstruccion 
-                        + ": se esperaba '$' al final pero se encontró '" + encontrado + "'\n";
+                return "Error sintáctico línea " + li
+                        + ": se esperaba '$' para finalizar la instrucción pero se encontró '"
+                        + encontrado + "'.\n";
             }
-            i++; // saltar $
-
-            // 9. Verificar límite de 6 bits (999999)
+            i++;
+ 
             Inter interResultado = (Inter) resultado;
             if (interResultado.getValor() > MAX_INTER || interResultado.getValor() < MIN_INTER) {
-                return "Error semántico línea " + lineaInstruccion 
-                        + ": el valor " + interResultado.getValor() 
-                        + " excede el límite permitido de 6 dígitos (máx: 999999, mín: -999999)\n";
+                return "Error semántico línea " + li
+                        + ": el valor " + interResultado.getValor()
+                        + " excede el rango permitido para 'inter' (mín: " + MIN_INTER + ", máx: " + MAX_INTER + ").\n";
             }
-
+ 
             tablaVariables.put(nombreVar, resultado);
             return nombreVar + "=" + interResultado.getValor() + ", sin error semántico\n";
-
+ 
         } catch (Exception e) {
             saltarHastaFinalizador();
             return e.getMessage() + "\n";
         }
     }
-
-    private TipoDato evaluarExpresionInter(int lineaInstruccion) throws Exception {
-
-    // Manejar menos unario al inicio: -87+50, -50-60
-    TipoDato izquierdo = obtenerValorInter(lineaInstruccion);
-
-    while (i < tokens.size() && esOperador(tokens.get(i).getTkns())) {
-        Tokens operador = tokens.get(i).getTkns();
-        i++; // saltar operador
-
-        // Falta operando derecho
-        if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": expresión incompleta, falta operando después de '"
-                    + operadorAString(operador) + "'");
+ 
+    private TipoDato evaluarExpresionInter(int li) throws Exception {
+        TipoDato izquierdo = obtenerValorInter(li);
+ 
+        while (i < tokens.size() && esOperador(tokens.get(i).getTkns())) {
+            Tokens operador = tokens.get(i).getTkns();
+            i++;
+ 
+            if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador)
+                throw new Exception("Error semántico línea " + li
+                        + ": expresión incompleta; falta el operando derecho después de '"
+                        + operadorAString(operador) + "'.");
+ 
+            if (tokens.get(i).getTkns() == Tokens.Comillas)
+                throw new Exception("Error semántico línea " + li
+                        + ": tipo incorrecto; no se puede operar un entero con una cadena de texto.");
+ 
+            if (tokens.get(i).getTkns() == Tokens.OperadorDecimal)
+                throw new Exception("Error semántico línea " + li
+                        + ": tipo incorrecto; no se puede usar '.' en una expresión entera 'inter'.");
+ 
+            TipoDato derecho = obtenerValorInter(li);
+ 
+            switch (operador) {
+                case Suma:           izquierdo = izquierdo.sumar(derecho);        break;
+                case Resta:          izquierdo = izquierdo.restar(derecho);       break;
+                case Multiplicacion: izquierdo = izquierdo.multiplicar(derecho);  break;
+                case Division:       izquierdo = izquierdo.dividir(derecho);      break;
+                default: throw new Exception("Error semántico línea " + li + ": operador no reconocido.");
+            }
         }
-
-        // No puede operarse con cadena
-        if (tokens.get(i).getTkns() == Tokens.Comillas) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": no se puede operar un entero con una cadena de texto");
-        }
-
-        // El operando derecho también puede ser negativo: 50- -20
-        TipoDato derecho = obtenerValorInter(lineaInstruccion);
-
-        switch (operador) {
-            case Suma:           izquierdo = izquierdo.sumar(derecho);        break;
-            case Resta:          izquierdo = izquierdo.restar(derecho);       break;
-            case Multiplicacion: izquierdo = izquierdo.multiplicar(derecho);  break;
-            case Division:       izquierdo = izquierdo.dividir(derecho);      break;
-            default: throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": operador desconocido");
-        }
+ 
+        return izquierdo;
     }
-
-    return izquierdo;
-}
-
-    private TipoDato obtenerValorInter(int lineaInstruccion) throws Exception {
-    if (i >= tokens.size()) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": se esperaba un valor pero la expresión terminó inesperadamente");
-    }
-
-    Token t = tokens.get(i);
-
-    // ── Menos unario: -87, -50, -(variable) ──────────────────────────────
-    if (t.getTkns() == Tokens.Resta) {
-        i++; // saltar el '-'
-
-        if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": se esperaba un número después del signo '-'");
+ 
+    private TipoDato obtenerValorInter(int li) throws Exception {
+        if (i >= tokens.size())
+            throw new Exception("Error semántico línea " + li
+                    + ": la expresión terminó inesperadamente; falta un valor entero.");
+ 
+        Token t = tokens.get(i);
+ 
+        // Menos unario
+        if (t.getTkns() == Tokens.Resta) {
+            i++;
+            if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador)
+                throw new Exception("Error semántico línea " + li
+                        + ": se esperaba un número después de '-' pero la instrucción terminó.");
+            Token sig = tokens.get(i);
+            if (sig.getTkns() == Tokens.Numero) {
+                i++;
+                try {
+                    int negativo = -Integer.parseInt(sig.getLexema());
+                    if (negativo < MIN_INTER)
+                        throw new Exception("Error semántico línea " + li
+                                + ": el valor " + negativo + " está fuera del rango mínimo (" + MIN_INTER + ").");
+                    return new Inter(negativo);
+                } catch (NumberFormatException e) {
+                    throw new Exception("Error semántico línea " + li
+                            + ": '" + sig.getLexema() + "' no es un número entero válido.");
+                }
+            }
+            if (sig.getTkns() == Tokens.Identificador) {
+                i++;
+                if (!tablaVariables.containsKey(sig.getLexema()))
+                    throw new Exception("Error semántico línea " + li
+                            + ": variable '" + sig.getLexema() + "' usada sin haber sido declarada.");
+                TipoDato var = tablaVariables.get(sig.getLexema());
+                if (!(var instanceof Inter))
+                    throw new Exception("Error semántico línea " + li
+                            + ": tipo incorrecto; la variable '" + sig.getLexema()
+                            + "' es de tipo '" + tipoDeVariable(var) + "', no 'inter'; no se puede negar.");
+                int negativo = -((Inter) var).getValor();
+                if (negativo < MIN_INTER)
+                    throw new Exception("Error semántico línea " + li
+                            + ": el valor negativo " + negativo + " excede el límite mínimo (" + MIN_INTER + ").");
+                return new Inter(negativo);
+            }
+            if (sig.getTkns() == Tokens.Comillas)
+                throw new Exception("Error semántico línea " + li
+                        + ": tipo incorrecto; no se puede negar una cadena de texto.");
+            throw new Exception("Error semántico línea " + li
+                    + ": token inesperado '" + sig.getLexema() + "' después de '-'.");
         }
-
-        Token siguiente = tokens.get(i);
-
-        // -número  → ejemplo: -87
-        if (siguiente.getTkns() == Tokens.Numero) {
+ 
+        // Número positivo
+        if (t.getTkns() == Tokens.Numero) {
+            String lexema = t.getLexema();
+            if (lexema.length() > 9)
+                throw new Exception("Error semántico línea " + li
+                        + ": el número '" + lexema + "' tiene " + lexema.length()
+                        + " dígitos; el máximo para 'inter' es 9 dígitos.");
             i++;
             try {
-                int num = Integer.parseInt(siguiente.getLexema());
-                int negativo = -num;
-                if (negativo < MIN_INTER) {
-                    throw new Exception("Error semántico línea " + lineaInstruccion
-                            + ": el número " + negativo
-                            + " excede el límite mínimo permitido (-999999)");
-                }
-                return new Inter(negativo); // tu clase Inter con valor negativo
+                int num = Integer.parseInt(lexema);
+                if (num > MAX_INTER || num < MIN_INTER)
+                    throw new Exception("Error semántico línea " + li
+                            + ": el valor " + num + " está fuera del rango 'inter' ("
+                            + MIN_INTER + " a " + MAX_INTER + ").");
+                return new Inter(num);
             } catch (NumberFormatException e) {
-                throw new Exception("Error semántico línea " + lineaInstruccion
-                        + ": número inválido después de '-'");
+                throw new Exception("Error semántico línea " + li
+                        + ": '" + lexema + "' no es un número entero válido.");
             }
         }
-
-        // -(variable) → ejemplo: -resultado
-        if (siguiente.getTkns() == Tokens.Identificador) {
+ 
+        // Variable
+        if (t.getTkns() == Tokens.Identificador) {
             i++;
-            if (!tablaVariables.containsKey(siguiente.getLexema())) {
-                throw new Exception("Error semántico línea " + lineaInstruccion
-                        + ": variable '" + siguiente.getLexema() + "' no ha sido declarada");
-            }
-            TipoDato var = tablaVariables.get(siguiente.getLexema());
-            if (!(var instanceof Inter)) {
-                throw new Exception("Error semántico línea " + lineaInstruccion
-                        + ": la variable '" + siguiente.getLexema() + "' no es de tipo 'inter'");
-            }
-            int negativo = -((Inter) var).getValor();
-            if (negativo < MIN_INTER) {
-                throw new Exception("Error semántico línea " + lineaInstruccion
-                        + ": el valor negativo " + negativo + " excede el límite mínimo (-999999)");
-            }
-            return new Inter(negativo);
+            if (!tablaVariables.containsKey(t.getLexema()))
+                throw new Exception("Error semántico línea " + li
+                        + ": variable '" + t.getLexema() + "' usada sin haber sido declarada.");
+            TipoDato var = tablaVariables.get(t.getLexema());
+            if (!(var instanceof Inter))
+                throw new Exception("Error semántico línea " + li
+                        + ": tipo incorrecto; la variable '" + t.getLexema()
+                        + "' es de tipo '" + tipoDeVariable(var) + "', pero se esperaba 'inter'.");
+            return var;
         }
-
-        // -cadena → error
-        if (siguiente.getTkns() == Tokens.Comillas) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": no se puede negar una cadena de texto");
-        }
-
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": token inesperado '" + siguiente.getLexema() + "' después de '-'");
+ 
+        if (t.getTkns() == Tokens.OperadorDecimal)
+            throw new Exception("Error semántico línea " + li
+                    + ": se encontró '.' en una expresión entera 'inter'; "
+                    + "los decimales no están permitidos (use 'dec').");
+ 
+        if (t.getTkns() == Tokens.Comillas)
+            throw new Exception("Error semántico línea " + li
+                    + ": tipo incorrecto; no se puede usar una cadena en una expresión entera 'inter'.");
+ 
+        throw new Exception("Error semántico línea " + li
+                + ": token inesperado '" + t.getLexema() + "' dentro de una expresión 'inter'.");
     }
-
-    // ── Número positivo ───────────────────────────────────────────────────
-    if (t.getTkns() == Tokens.Numero) {
-
-    String lexema = t.getLexema();
-
-    // ✅ VALIDAR LONGITUD (9 dígitos)
-    if (lexema.length() > 9) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": el número excede los 9 dígitos permitidos");
-    }
-
-    i++;
-    try {
-        int num = Integer.parseInt(lexema);
-
-        if (num > MAX_INTER || num < MIN_INTER) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": el número " + num + " está fuera del rango permitido");
-        }
-
-        return new Inter(num);
-
-    } catch (NumberFormatException e) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": número inválido '" + lexema + "'");
-    }
-}
-
-    // ── Variable ──────────────────────────────────────────────────────────
-    if (t.getTkns() == Tokens.Identificador) {
-        i++;
-        if (!tablaVariables.containsKey(t.getLexema())) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": variable '" + t.getLexema() + "' no ha sido declarada");
-        }
-        TipoDato var = tablaVariables.get(t.getLexema());
-        if (!(var instanceof Inter)) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": la variable '" + t.getLexema() + "' no es de tipo 'inter'");
-        }
-        return var;
-    }
-
-    // ── Decimal mal usado ─────────────────────────────────────────────────
-    if (t.getTkns() == Tokens.OperadorDecimal) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": se encontró '.' en tipo 'inter', los decimales no están permitidos");
-    }
-
-    // ── Cadena en expresión entera ────────────────────────────────────────
-    if (t.getTkns() == Tokens.Comillas) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": no se puede usar una cadena en una expresión entera");
-    }
-
-    throw new Exception("Error semántico línea " + lineaInstruccion
-            + ": token inesperado '" + t.getLexema() + "' en la expresión entera");
-}
+ 
     // ══════════════════════════════════════════════════════
-//  DEC
-// ══════════════════════════════════════════════════════
-private String analizarDec() {
-    int lineaInstruccion = linea;
-    i++; // saltar 'dec'
-
-    // 1. Debe seguir un identificador
-    if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
-        saltarHastaFinalizador();
-        return "Error sintáctico línea " + lineaInstruccion
-                + ": se esperaba un identificador después de 'dec'\n";
-    }
-
-    if (tokens.get(i).getTkns() != Tokens.Identificador) {
-        String encontrado = tokens.get(i).getLexema();
-        saltarHastaFinalizador();
-        return "Error sintáctico línea " + lineaInstruccion
-                + ": identificador inválido '" + encontrado + "' después de 'dec'\n";
-    }
-
-    String nombreVar = tokens.get(i).getLexema();
-
-    // 2. No puede ser palabra reservada
-    if (esReservada(nombreVar)) {
-        saltarHastaFinalizador();
-        return "Error semántico línea " + lineaInstruccion
-                + ": '" + nombreVar + "' es una palabra reservada\n";
-    }
-
-    // 3. Variable ya declarada
-    if (tablaVariables.containsKey(nombreVar)) {
-        saltarHastaFinalizador();
-        return "Error semántico línea " + lineaInstruccion
-                + ": variable '" + nombreVar + "' ya fue declarada anteriormente\n";
-    }
-
-    i++; // saltar identificador
-
-    // 4. Debe seguir ||
-    if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Igual) {
-        String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
-        saltarHastaFinalizador();
-        return "Error sintáctico línea " + lineaInstruccion
-                + ": se esperaba '||' pero se encontró '" + encontrado + "'\n";
-    }
-    i++; // saltar ||
-
-    // 5. Expresión no puede estar vacía
-    if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
-        saltarHastaFinalizador();
-        return "Error semántico línea " + lineaInstruccion
-                + ": expresión vacía en la asignación de '" + nombreVar + "'\n";
-    }
-
-    // 6. No puede asignarse cadena a dec
-    if (tokens.get(i).getTkns() == Tokens.Comillas) {
-        saltarHastaFinalizador();
-        return "Error semántico línea " + lineaInstruccion
-                + ": no se puede asignar una cadena a la variable decimal '" + nombreVar + "'\n";
-    }
-
-    // 7. Evaluar expresión decimal
-    try {
-        TipoDato resultado = evaluarExpresionDec(lineaInstruccion);
-
-        // 8. Debe terminar con $
-        if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
-            String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
-            saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion
-                    + ": se esperaba '$' al final pero se encontró '" + encontrado + "'\n";
-        }
-        i++; // saltar $
-
-        tablaVariables.put(nombreVar, resultado);
-        Dec decResultado = (Dec) resultado;
-        return nombreVar + "=" + decResultado.getValor() + ", sin error semántico\n";
-
-    } catch (Exception e) {
-        saltarHastaFinalizador();
-        return e.getMessage() + "\n";
-    }
-}
-
-private TipoDato evaluarExpresionDec(int lineaInstruccion) throws Exception {
-    TipoDato izquierdo = obtenerValorDec(lineaInstruccion);
-
-    while (i < tokens.size() && esOperador(tokens.get(i).getTkns())) {
-        Tokens operador = tokens.get(i).getTkns();
-        i++;
-
-        if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": expresión incompleta, falta operando después de '"
-                    + operadorAString(operador) + "'");
-        }
-
-        if (tokens.get(i).getTkns() == Tokens.Comillas) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": no se puede operar un decimal con una cadena");
-        }
-
-        TipoDato derecho = obtenerValorDec(lineaInstruccion);
-
-        // Usar métodos de tu clase Dec
-        switch (operador) {
-            case Suma:           izquierdo = izquierdo.sumar(derecho);        break;
-            case Resta:          izquierdo = izquierdo.restar(derecho);       break;
-            case Multiplicacion: izquierdo = izquierdo.multiplicar(derecho);  break;
-            case Division:       izquierdo = izquierdo.dividir(derecho);      break;
-            default: throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": operador desconocido");
-        }
-    }
-
-    return izquierdo;
-}
-
-private TipoDato obtenerValorDec(int lineaInstruccion) throws Exception {
-    if (i >= tokens.size()) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": se esperaba un valor decimal pero la expresión terminó");
-    }
-
-    Token t = tokens.get(i);
-
-    // ── Menos unario: -3.14 ───────────────────────────────────────────────
-    if (t.getTkns() == Tokens.Resta) {
-        i++;
-        double num = leerNumeroDec(lineaInstruccion);
-        return new Dec(-num);
-    }
-
-    // ── Número decimal o entero positivo ─────────────────────────────────
-    if (t.getTkns() == Tokens.Numero || t.getTkns() == Tokens.OperadorDecimal) {
-        double num = leerNumeroDec(lineaInstruccion);
-        return new Dec(num);
-    }
-
-    // ── Variable dec ya declarada ─────────────────────────────────────────
-    if (t.getTkns() == Tokens.Identificador) {
-        i++;
-        if (!tablaVariables.containsKey(t.getLexema())) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": variable '" + t.getLexema() + "' no ha sido declarada");
-        }
-        TipoDato var = tablaVariables.get(t.getLexema());
-        if (!(var instanceof Dec)) {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": la variable '" + t.getLexema() + "' no es de tipo 'dec'");
-        }
-        return var;
-    }
-
-    // ── Cadena en expresión decimal ───────────────────────────────────────
-    if (t.getTkns() == Tokens.Comillas) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": no se puede usar una cadena en una expresión decimal");
-    }
-
-    throw new Exception("Error semántico línea " + lineaInstruccion
-            + ": token inesperado '" + t.getLexema() + "' en expresión decimal");
-}
-
-// Lee entero o decimal: 3  /  3.14  /  .5
-private double leerNumeroDec(int lineaInstruccion) throws Exception {
-    StringBuilder parteEntera = new StringBuilder();
-    StringBuilder parteDecimal = new StringBuilder();
-
-    // ── Parte entera ─────────────────────────────
-    if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Numero) {
-        parteEntera.append(tokens.get(i).getLexema());
-        i++;
-    }
-
-    // ── Punto decimal ────────────────────────────
-    boolean tienePunto = false;
-
-    if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.OperadorDecimal) {
-        tienePunto = true;
-        i++;
-
-        // ── Parte decimal ────────────────────────
-        if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Numero) {
-            parteDecimal.append(tokens.get(i).getLexema());
-            i++;
-        } else {
-            throw new Exception("Error semántico línea " + lineaInstruccion
-                    + ": se esperaba dígitos después del '.'");
-        }
-    }
-
-    // ── Validaciones 🔥 ─────────────────────────
-
-    // 👉 máximo 8 dígitos en parte entera
-    if (parteEntera.length() > 9) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": la parte entera excede 8 dígitos");
-    }
-
-    // 👉 máximo 2 dígitos en parte decimal
-    if (parteDecimal.length() > 8) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": la parte decimal excede 2 dígitos");
-    }
-
-    // ── Construcción del número ────────────────
-    String numeroStr;
-
-    if (tienePunto) {
-        numeroStr = parteEntera + "." + parteDecimal;
-    } else {
-        numeroStr = parteEntera.toString();
-    }
-
-    try {
-        return Double.parseDouble(numeroStr);
-    } catch (NumberFormatException e) {
-        throw new Exception("Error semántico línea " + lineaInstruccion
-                + ": formato decimal inválido '" + numeroStr + "'");
-    }
-}    // ══════════════════════════════════════════════════════
-    //  CAD
+    //  DEC  (declaración)
     // ══════════════════════════════════════════════════════
-    private String analizarCad() {
-        int lineaInstruccion = linea;
-        i++; // saltar 'cad'
-
-        // 1. Debe seguir un identificador
+    private String analizarDec() {
+        int li = linea;
+        i++; // saltar 'dec'
+ 
         if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
             saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion 
-                    + ": se esperaba un identificador después de 'cad'\n";
+            return "Error sintáctico línea " + li
+                    + ": se esperaba el nombre de la variable después de 'dec' (ej: dec x||3.14$).\n";
         }
-
+ 
+        if (tokens.get(i).getTkns() == Tokens.Numero) {
+            String num = tokens.get(i).getLexema();
+            saltarHastaFinalizador();
+            return "Error sintáctico línea " + li
+                    + ": el nombre de variable no puede ser un número ('" + num + "'); "
+                    + "use letras (ej: dec precio||" + num + ".0$).\n";
+        }
+ 
         if (tokens.get(i).getTkns() != Tokens.Identificador) {
             String encontrado = tokens.get(i).getLexema();
             saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion 
-                    + ": identificador inválido '" + encontrado + "' después de 'cad'\n";
+            return "Error sintáctico línea " + li
+                    + ": nombre de variable inválido '" + encontrado + "' después de 'dec'.\n";
         }
-
+ 
         String nombreVar = tokens.get(i).getLexema();
-
-        // 2. No puede ser palabra reservada
+ 
         if (esReservada(nombreVar)) {
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": '" + nombreVar + "' es una palabra reservada\n";
+            return "Error semántico línea " + li
+                    + ": '" + nombreVar + "' es una palabra reservada; no puede usarse como nombre de variable.\n";
         }
-
-        // 3. Variable ya declarada
+ 
         if (tablaVariables.containsKey(nombreVar)) {
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": variable '" + nombreVar + "' ya fue declarada anteriormente\n";
+            return "Error semántico línea " + li
+                    + ": variable '" + nombreVar + "' ya fue declarada anteriormente; no se permite redeclarar.\n";
         }
-
-        i++; // saltar identificador
-
-        // 4. Debe seguir ||
+ 
+        i++;
+ 
         if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
             saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion 
-                    + ": se esperaba '||' después de '" + nombreVar + "'\n";
+            return "Error sintáctico línea " + li
+                    + ": es necesario inicializar la variable '" + nombreVar
+                    + "'; ejemplo: dec " + nombreVar + "||0.0$\n";
         }
-
+ 
         if (tokens.get(i).getTkns() != Tokens.Igual) {
             String encontrado = tokens.get(i).getLexema();
             saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion 
-                    + ": se esperaba '||' pero se encontró '" + encontrado + "'\n";
+            return "Error sintáctico línea " + li
+                    + ": se esperaba '||' para asignar un valor a '" + nombreVar
+                    + "', pero se encontró '" + encontrado + "'.\n";
         }
-        i++; // saltar ||
-
-        // 5. Expresión no puede estar vacía
+        i++;
+ 
         if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": expresión vacía en la asignación de '" + nombreVar + "'\n";
+            return "Error semántico línea " + li
+                    + ": falta el valor en la asignación de '" + nombreVar
+                    + "'. Ejemplo válido: dec " + nombreVar + "||3.14$\n";
         }
-
-        // 6. No puede asignarse un número a cad
+ 
+        if (tokens.get(i).getTkns() == Tokens.Comillas) {
+            String cadena = tokens.get(i).getLexema();
+            saltarHastaFinalizador();
+            return "Error semántico línea " + li
+                    + ": tipo incorrecto; no se puede asignar la cadena " + cadena
+                    + " a la variable decimal '" + nombreVar + "'. Use 'cad' para cadenas.\n";
+        }
+ 
+        if (tokens.get(i).getTkns() == Tokens.Multiplicacion
+                || tokens.get(i).getTkns() == Tokens.Division) {
+            String op = tokens.get(i).getLexema();
+            saltarHastaFinalizador();
+            return "Error semántico línea " + li
+                    + ": la expresión de '" + nombreVar + "' no puede comenzar con '" + op + "'.\n";
+        }
+ 
+        try {
+            TipoDato resultado = evaluarExpresionDec(li);
+ 
+            if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
+                String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
+                saltarHastaFinalizador();
+                return "Error sintáctico línea " + li
+                        + ": se esperaba '$' para finalizar la instrucción pero se encontró '"
+                        + encontrado + "'.\n";
+            }
+            i++;
+ 
+            tablaVariables.put(nombreVar, resultado);
+            Dec decResultado = (Dec) resultado;
+            return nombreVar + "=" + decResultado.getValor() + ", sin error semántico\n";
+ 
+        } catch (Exception e) {
+            saltarHastaFinalizador();
+            return e.getMessage() + "\n";
+        }
+    }
+ 
+    private TipoDato evaluarExpresionDec(int li) throws Exception {
+        TipoDato izquierdo = obtenerValorDec(li);
+ 
+        while (i < tokens.size() && esOperador(tokens.get(i).getTkns())) {
+            Tokens operador = tokens.get(i).getTkns();
+            i++;
+ 
+            if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador)
+                throw new Exception("Error semántico línea " + li
+                        + ": expresión incompleta; falta el operando derecho después de '"
+                        + operadorAString(operador) + "'.");
+ 
+            if (tokens.get(i).getTkns() == Tokens.Comillas)
+                throw new Exception("Error semántico línea " + li
+                        + ": tipo incorrecto; no se puede operar un decimal con una cadena de texto.");
+ 
+            TipoDato derecho = obtenerValorDec(li);
+ 
+            switch (operador) {
+                case Suma:           izquierdo = izquierdo.sumar(derecho);        break;
+                case Resta:          izquierdo = izquierdo.restar(derecho);       break;
+                case Multiplicacion: izquierdo = izquierdo.multiplicar(derecho);  break;
+                case Division:       izquierdo = izquierdo.dividir(derecho);      break;
+                default: throw new Exception("Error semántico línea " + li + ": operador no reconocido.");
+            }
+        }
+ 
+        return izquierdo;
+    }
+ 
+    private TipoDato obtenerValorDec(int li) throws Exception {
+        if (i >= tokens.size())
+            throw new Exception("Error semántico línea " + li
+                    + ": la expresión terminó inesperadamente; falta un valor decimal.");
+ 
+        Token t = tokens.get(i);
+ 
+        // Menos unario
+        if (t.getTkns() == Tokens.Resta) {
+            i++;
+            double num = leerNumeroDec(li);
+            return new Dec(-num);
+        }
+ 
+        // Número o inicio con punto
+        if (t.getTkns() == Tokens.Numero || t.getTkns() == Tokens.OperadorDecimal) {
+            double num = leerNumeroDec(li);
+            return new Dec(num);
+        }
+ 
+        // Variable dec declarada
+        if (t.getTkns() == Tokens.Identificador) {
+            i++;
+            if (!tablaVariables.containsKey(t.getLexema()))
+                throw new Exception("Error semántico línea " + li
+                        + ": variable '" + t.getLexema() + "' usada sin haber sido declarada.");
+            TipoDato var = tablaVariables.get(t.getLexema());
+            if (!(var instanceof Dec))
+                throw new Exception("Error semántico línea " + li
+                        + ": tipo incorrecto; la variable '" + t.getLexema()
+                        + "' es de tipo '" + tipoDeVariable(var) + "', pero se esperaba 'dec'.");
+            return var;
+        }
+ 
+        if (t.getTkns() == Tokens.Comillas)
+            throw new Exception("Error semántico línea " + li
+                    + ": tipo incorrecto; no se puede usar una cadena en una expresión decimal 'dec'.");
+ 
+        throw new Exception("Error semántico línea " + li
+                + ": token inesperado '" + t.getLexema() + "' dentro de una expresión 'dec'.");
+    }
+ 
+    /**
+     * Lee un literal numérico decimal del flujo de tokens.
+     * Exige punto decimal en literales: 78 → error, 78.0 → ok.
+     * Si ambas partes (entera y decimal) exceden el límite, reporta ambas.
+     */
+    private double leerNumeroDec(int li) throws Exception {
+        StringBuilder parteEntera  = new StringBuilder();
+        StringBuilder parteDecimal = new StringBuilder();
+ 
+        if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Numero) {
+            parteEntera.append(tokens.get(i).getLexema());
+            i++;
+        }
+ 
+        boolean tienePunto = false;
+        if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.OperadorDecimal) {
+            tienePunto = true;
+            i++;
+            if (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Numero) {
+                parteDecimal.append(tokens.get(i).getLexema());
+                i++;
+            } else {
+                throw new Exception("Error semántico línea " + li
+                        + ": se esperaban dígitos después del '.' en el valor decimal.");
+            }
+        }
+ 
+        // ── Estricto: literales en 'dec' deben llevar punto decimal ──────────
+        if (!tienePunto && parteEntera.length() > 0) {
+            throw new Exception("Error semántico línea " + li
+                    + ": no se puede asignar el valor entero '" + parteEntera
+                    + "' a una variable de tipo 'dec'; use notación decimal (ej: "
+                    + parteEntera + ".0).");
+        }
+ 
+        // ── Límites: reporta ambas partes si las dos exceden ─────────────────
+        List<String> excesos = new ArrayList<>();
+        if (parteEntera.length() > 9)
+            excesos.add("la parte entera '" + parteEntera + "' excede los 9 dígitos permitidos");
+        if (parteDecimal.length() > 8)
+            excesos.add("la parte decimal '" + parteDecimal + "' excede los 8 dígitos permitidos");
+        if (!excesos.isEmpty())
+            throw new Exception("Error semántico línea " + li
+                    + ": en 'dec', " + String.join(" y además ", excesos) + ".");
+ 
+        String numeroStr = tienePunto ? parteEntera + "." + parteDecimal : parteEntera.toString();
+ 
+        if (numeroStr.isEmpty() || numeroStr.equals("."))
+            throw new Exception("Error semántico línea " + li
+                    + ": no se encontró un valor numérico válido para 'dec'.");
+ 
+        try {
+            return Double.parseDouble(numeroStr);
+        } catch (NumberFormatException e) {
+            throw new Exception("Error semántico línea " + li
+                    + ": formato decimal inválido '" + numeroStr + "'.");
+        }
+    }
+ 
+    // ══════════════════════════════════════════════════════
+    //  CAD  (declaración + concatenación con +)
+    // ══════════════════════════════════════════════════════
+    private String analizarCad() {
+        int li = linea;
+        i++; // saltar 'cad'
+ 
+        // ── cad++$ o cad--$ : error específico ───────────────────────────────
+        if (i < tokens.size()
+                && (tokens.get(i).getTkns() == Tokens.Incremento
+                 || tokens.get(i).getTkns() == Tokens.Decremento)) {
+            saltarHastaFinalizador();
+            return "Error sintáctico línea " + li
+                    + ": no se puede incrementar o decrementar el tipo 'cad'; "
+                    + "esta operación solo es válida para 'inter' y 'dec'.\n";
+        }
+ 
+        if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
+            saltarHastaFinalizador();
+            return "Error sintáctico línea " + li
+                    + ": se esperaba el nombre de la variable después de 'cad' (ej: cad nombre||\"Hola\"$).\n";
+        }
+ 
         if (tokens.get(i).getTkns() == Tokens.Numero) {
+            String num = tokens.get(i).getLexema();
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": no se puede asignar un número entero a la variable '" + nombreVar + "'\n";
+            return "Error sintáctico línea " + li
+                    + ": el nombre de variable no puede ser un número ('" + num + "'); "
+                    + "use letras (ej: cad texto||\"valor\"$).\n";
         }
-
-        // 7. No puede asignarse decimal a cad
-        if (tokens.get(i).getTkns() == Tokens.OperadorDecimal) {
-            saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": no se puede asignar un decimal a la variable 'cad' '" + nombreVar + "'\n";
-        }
-
-        // 8. No puede haber operaciones aritméticas en cad
-        if (esOperador(tokens.get(i).getTkns())) {
-            saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": no se permiten operaciones aritméticas en tipo 'cad'\n";
-        }
-
-        // 9. Debe ser una cadena entre comillas
-        if (tokens.get(i).getTkns() != Tokens.Comillas) {
+ 
+        if (tokens.get(i).getTkns() != Tokens.Identificador) {
             String encontrado = tokens.get(i).getLexema();
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": se esperaba una cadena entre comillas pero se encontró '" + encontrado + "'\n";
+            return "Error sintáctico línea " + li
+                    + ": nombre de variable inválido '" + encontrado + "' después de 'cad'.\n";
         }
-
-        String valorCad = tokens.get(i).getLexema();
-        i++; // saltar comillas/cadena
-
-        // 10. No puede haber operadores después de la cadena
-        if (i < tokens.size() && esOperador(tokens.get(i).getTkns())) {
+ 
+        String nombreVar = tokens.get(i).getLexema();
+ 
+        if (esReservada(nombreVar)) {
             saltarHastaFinalizador();
-            return "Error semántico línea " + lineaInstruccion 
-                    + ": no se pueden concatenar cadenas con operadores aritméticos en 'cad'\n";
+            return "Error semántico línea " + li
+                    + ": '" + nombreVar + "' es una palabra reservada; no puede usarse como nombre de variable.\n";
         }
-
-        // 11. Debe terminar con $
-        if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
-            String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
+ 
+        if (tablaVariables.containsKey(nombreVar)) {
             saltarHastaFinalizador();
-            return "Error sintáctico línea " + lineaInstruccion 
-                    + ": se esperaba '$' al final pero se encontró '" + encontrado + "'\n";
+            return "Error semántico línea " + li
+                    + ": variable '" + nombreVar + "' ya fue declarada anteriormente; no se permite redeclarar.\n";
         }
-        i++; // saltar $
-
-        // 12. Guardar en tabla como Cad
-        Cad cadena = new Cad(nombreVar, valorCad.replace("\"", ""));
-        tablaVariables.put(nombreVar, cadena);
-        return nombreVar + "=\"" + cadena.getValor() + "\", sin error semántico\n";
+ 
+        i++;
+ 
+        // ── cad hola$ (sin || valor): error de inicialización ────────────────
+        if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
+            saltarHastaFinalizador();
+            return "Error sintáctico línea " + li
+                    + ": es necesario inicializar la variable '" + nombreVar
+                    + "'; declare su valor con ||: cad " + nombreVar + "||\"valor\"$\n";
+        }
+ 
+        if (tokens.get(i).getTkns() != Tokens.Igual) {
+            String encontrado = tokens.get(i).getLexema();
+            saltarHastaFinalizador();
+            return "Error sintáctico línea " + li
+                    + ": se esperaba '||' para asignar un valor a '" + nombreVar
+                    + "', pero se encontró '" + encontrado + "'.\n";
+        }
+        i++;
+ 
+        if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
+            saltarHastaFinalizador();
+            return "Error semántico línea " + li
+                    + ": falta el valor en la asignación de '" + nombreVar
+                    + "'. Ejemplo: cad " + nombreVar + "||\"texto\"$\n";
+        }
+ 
+        if (tokens.get(i).getTkns() == Tokens.Numero) {
+            String num = tokens.get(i).getLexema();
+            saltarHastaFinalizador();
+            return "Error semántico línea " + li
+                    + ": tipo incorrecto; no se puede asignar el número " + num
+                    + " a una variable 'cad'. Envuélvelo en comillas: \"" + num + "\"\n";
+        }
+ 
+        if (esOperadorNoPermitidoEnCad(tokens.get(i).getTkns())) {
+            String op = tokens.get(i).getLexema();
+            saltarHastaFinalizador();
+            return "Error semántico línea " + li
+                    + ": operador '" + op + "' no válido al inicio de una expresión 'cad'. "
+                    + "Solo se permite '+' para concatenar cadenas o variables.\n";
+        }
+ 
+        try {
+            String valorFinal = evaluarExpresionCad(li);
+ 
+            if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
+                String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
+                saltarHastaFinalizador();
+                return "Error sintáctico línea " + li
+                        + ": se esperaba '$' para finalizar la instrucción pero se encontró '"
+                        + encontrado + "'.\n";
+            }
+            i++;
+ 
+            Cad cadena = new Cad(nombreVar, valorFinal);
+            tablaVariables.put(nombreVar, cadena);
+            return nombreVar + "=\"" + valorFinal + "\", sin error semántico\n";
+ 
+        } catch (Exception e) {
+            saltarHastaFinalizador();
+            return e.getMessage() + "\n";
+        }
     }
-
-    private String analizarIncDec() {
-    int lineaInstruccion = linea;
-
-    String nombreVar = tokens.get(i).getLexema();
-
-    // 1. Verificar que exista
-    if (!tablaVariables.containsKey(nombreVar)) {
+ 
+    /** Evalúa concatenación: primer_valor [+ siguiente_valor]* */
+    private String evaluarExpresionCad(int li) throws Exception {
+        StringBuilder resultado = new StringBuilder();
+        resultado.append(obtenerValorCad(li));
+ 
+        while (i < tokens.size() && tokens.get(i).getTkns() == Tokens.Suma) {
+            i++; // saltar +
+            if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador)
+                throw new Exception("Error semántico línea " + li
+                        + ": expresión incompleta en 'cad'; falta el operando derecho después de '+'.");
+            resultado.append(obtenerValorCad(li));
+        }
+ 
+        if (i < tokens.size() && esOperadorNoPermitidoEnCad(tokens.get(i).getTkns()))
+            throw new Exception("Error semántico línea " + li
+                    + ": operador '" + tokens.get(i).getLexema() + "' no está permitido en tipo 'cad'. "
+                    + "Solo se puede usar '+' para concatenar.");
+ 
+        return resultado.toString();
+    }
+ 
+    private String obtenerValorCad(int li) throws Exception {
+        if (i >= tokens.size())
+            throw new Exception("Error semántico línea " + li
+                    + ": la expresión terminó inesperadamente; se esperaba una cadena o variable 'cad'.");
+ 
+        Token t = tokens.get(i);
+ 
+        if (t.getTkns() == Tokens.Comillas) {
+            i++;
+            return t.getLexema().replace("\"", "");
+        }
+ 
+        if (t.getTkns() == Tokens.Identificador) {
+            i++;
+            if (!tablaVariables.containsKey(t.getLexema()))
+                throw new Exception("Error semántico línea " + li
+                        + ": variable '" + t.getLexema() + "' usada sin haber sido declarada.");
+            TipoDato var = tablaVariables.get(t.getLexema());
+            if (!(var instanceof Cad))
+                throw new Exception("Error semántico línea " + li
+                        + ": tipo incorrecto; la variable '" + t.getLexema()
+                        + "' es de tipo '" + tipoDeVariable(var) + "', pero se esperaba 'cad' para concatenar.");
+            return ((Cad) var).getValor();
+        }
+ 
+        if (t.getTkns() == Tokens.Numero)
+            throw new Exception("Error semántico línea " + li
+                    + ": tipo incorrecto; el número '" + t.getLexema()
+                    + "' no puede usarse en una expresión 'cad'. Envuélvelo en comillas.");
+ 
+        if (t.getTkns() == Tokens.OperadorDecimal)
+            throw new Exception("Error semántico línea " + li
+                    + ": tipo incorrecto; '.' no puede aparecer en una expresión 'cad'.");
+ 
+        if (esOperadorNoPermitidoEnCad(t.getTkns()))
+            throw new Exception("Error semántico línea " + li
+                    + ": operador '" + t.getLexema() + "' no válido en tipo 'cad'. "
+                    + "Solo '+' puede usarse para concatenar.");
+ 
+        throw new Exception("Error semántico línea " + li
+                + ": token inesperado '" + t.getLexema() + "' en expresión 'cad'.");
+    }
+ 
+    // ══════════════════════════════════════════════════════
+    //  IDENTIFICADOR: incremento/decremento  O  reasignación
+    // ══════════════════════════════════════════════════════
+    private String analizarIdentificador() {
+        int li = linea;
+        String nombreVar = tokens.get(i).getLexema();
+        i++; // saltar identificador
+ 
+        if (!tablaVariables.containsKey(nombreVar)) {
+            saltarHastaFinalizador();
+            return "Error semántico línea " + li
+                    + ": variable '" + nombreVar + "' usada sin haber sido declarada.\n";
+        }
+ 
+        TipoDato var = tablaVariables.get(nombreVar);
+ 
+        if (i >= tokens.size()) {
+            return "Error sintáctico línea " + li
+                    + ": instrucción incompleta para '" + nombreVar
+                    + "'; se esperaba '||', '++' o '--'.\n";
+        }
+ 
+        Tokens siguiente = tokens.get(i).getTkns();
+ 
+        // ── Reasignación ─────────────────────────────────────────────────────
+        if (siguiente == Tokens.Igual) {
+            return reasignar(nombreVar, var, li);
+        }
+ 
+        // ── Incremento / Decremento ───────────────────────────────────────────
+        if (siguiente == Tokens.Incremento || siguiente == Tokens.Decremento) {
+ 
+            if (var instanceof Cad) {
+                saltarHastaFinalizador();
+                return "Error semántico línea " + li
+                        + ": no se puede incrementar o decrementar la variable '"
+                        + nombreVar + "' de tipo 'cad'; "
+                        + "esta operación solo es válida para 'inter' y 'dec'.\n";
+            }
+ 
+            if (!(var instanceof Inter) && !(var instanceof Dec)) {
+                saltarHastaFinalizador();
+                return "Error semántico línea " + li
+                        + ": el operador de incremento/decremento no aplica a '"
+                        + tipoDeVariable(var) + "'; solo es válido para 'inter' y 'dec'.\n";
+            }
+ 
+            Tokens op = siguiente;
+            i++;
+ 
+            if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
+                String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
+                saltarHastaFinalizador();
+                return "Error sintáctico línea " + li
+                        + ": se esperaba '$' al final de la instrucción pero se encontró '"
+                        + encontrado + "'.\n";
+            }
+            i++;
+ 
+            if (var instanceof Inter) {
+                int nuevo = ((Inter) var).getValor() + (op == Tokens.Incremento ? 1 : -1);
+                tablaVariables.put(nombreVar, new Inter(nuevo));
+                return nombreVar + "=" + nuevo + ", sin error semántico\n";
+            } else {
+                double nuevo = ((Dec) var).getValor() + (op == Tokens.Incremento ? 1.0 : -1.0);
+                tablaVariables.put(nombreVar, new Dec(nuevo));
+                return nombreVar + "=" + nuevo + ", sin error semántico\n";
+            }
+        }
+ 
+        String encontrado = tokens.get(i).getLexema();
         saltarHastaFinalizador();
-        return "Error semántico línea " + lineaInstruccion
-                + ": variable '" + nombreVar + "' no ha sido declarada\n";
+        return "Error sintáctico línea " + li
+                + ": se esperaba '||', '++' o '--' después de '" + nombreVar
+                + "', pero se encontró '" + encontrado + "'.\n";
     }
-
-    TipoDato var = tablaVariables.get(nombreVar);
-
-    // 2. Solo aplica a inter y dec
-    if (!(var instanceof Inter) && !(var instanceof Dec)) {
+ 
+    /**
+     * Reasigna un nuevo valor a una variable ya declarada.
+     * Aplica las mismas reglas semánticas/estrictas que la declaración.
+     */
+    private String reasignar(String nombreVar, TipoDato var, int li) {
+        i++; // saltar ||
+ 
+        if (i >= tokens.size() || tokens.get(i).getTkns() == Tokens.Finalizador) {
+            saltarHastaFinalizador();
+            return "Error semántico línea " + li
+                    + ": falta el nuevo valor en la reasignación de '" + nombreVar + "'.\n";
+        }
+ 
+        // ── Reasignación inter ────────────────────────────────────────────────
+        if (var instanceof Inter) {
+            if (tokens.get(i).getTkns() == Tokens.Comillas) {
+                String cad = tokens.get(i).getLexema();
+                saltarHastaFinalizador();
+                return "Error semántico línea " + li
+                        + ": tipo incorrecto; no se puede asignar la cadena " + cad
+                        + " a la variable entera '" + nombreVar + "'.\n";
+            }
+            try {
+                TipoDato nuevo = evaluarExpresionInter(li);
+                if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
+                    String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
+                    saltarHastaFinalizador();
+                    return "Error sintáctico línea " + li
+                            + ": se esperaba '$' al final pero se encontró '" + encontrado + "'.\n";
+                }
+                i++;
+                Inter interNuevo = (Inter) nuevo;
+                if (interNuevo.getValor() > MAX_INTER || interNuevo.getValor() < MIN_INTER) {
+                    return "Error semántico línea " + li
+                            + ": el valor " + interNuevo.getValor()
+                            + " excede el rango permitido para 'inter'.\n";
+                }
+                tablaVariables.put(nombreVar, nuevo);
+                return nombreVar + "=" + interNuevo.getValor() + ", sin error semántico\n";
+            } catch (Exception e) {
+                saltarHastaFinalizador();
+                return e.getMessage() + "\n";
+            }
+        }
+ 
+        // ── Reasignación dec ──────────────────────────────────────────────────
+        if (var instanceof Dec) {
+            if (tokens.get(i).getTkns() == Tokens.Comillas) {
+                String cad = tokens.get(i).getLexema();
+                saltarHastaFinalizador();
+                return "Error semántico línea " + li
+                        + ": tipo incorrecto; no se puede asignar la cadena " + cad
+                        + " a la variable decimal '" + nombreVar + "'.\n";
+            }
+            try {
+                TipoDato nuevo = evaluarExpresionDec(li);
+                if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
+                    String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
+                    saltarHastaFinalizador();
+                    return "Error sintáctico línea " + li
+                            + ": se esperaba '$' al final pero se encontró '" + encontrado + "'.\n";
+                }
+                i++;
+                tablaVariables.put(nombreVar, nuevo);
+                Dec decNuevo = (Dec) nuevo;
+                return nombreVar + "=" + decNuevo.getValor() + ", sin error semántico\n";
+            } catch (Exception e) {
+                saltarHastaFinalizador();
+                return e.getMessage() + "\n";
+            }
+        }
+ 
+        // ── Reasignación cad ──────────────────────────────────────────────────
+        if (var instanceof Cad) {
+            if (tokens.get(i).getTkns() == Tokens.Numero) {
+                String num = tokens.get(i).getLexema();
+                saltarHastaFinalizador();
+                return "Error semántico línea " + li
+                        + ": tipo incorrecto; no se puede asignar el número " + num
+                        + " a la variable 'cad' '" + nombreVar + "'.\n";
+            }
+            if (esOperadorNoPermitidoEnCad(tokens.get(i).getTkns())) {
+                String op = tokens.get(i).getLexema();
+                saltarHastaFinalizador();
+                return "Error semántico línea " + li
+                        + ": operador '" + op + "' no válido en reasignación de 'cad'.\n";
+            }
+            try {
+                String nuevoValor = evaluarExpresionCad(li);
+                if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
+                    String encontrado = i < tokens.size() ? tokens.get(i).getLexema() : "fin de archivo";
+                    saltarHastaFinalizador();
+                    return "Error sintáctico línea " + li
+                            + ": se esperaba '$' al final pero se encontró '" + encontrado + "'.\n";
+                }
+                i++;
+                tablaVariables.put(nombreVar, new Cad(nombreVar, nuevoValor));
+                return nombreVar + "=\"" + nuevoValor + "\", sin error semántico\n";
+            } catch (Exception e) {
+                saltarHastaFinalizador();
+                return e.getMessage() + "\n";
+            }
+        }
+ 
         saltarHastaFinalizador();
-        return "Error semántico línea " + lineaInstruccion
-                + ": incremento/decremento solo válido para 'inter' y 'dec'\n";
+        return "Error semántico línea " + li
+                + ": no se puede reasignar la variable '" + nombreVar + "' de tipo desconocido.\n";
     }
-
-    i++; // saltar identificador
-
-    if (i >= tokens.size()) {
-        return "Error sintáctico línea " + lineaInstruccion
-                + ": se esperaba '++' o '--'\n";
-    }
-
-    Tokens op = tokens.get(i).getTkns();
-
-    // 3. Validar operador
-    if (op != Tokens.Incremento && op != Tokens.Decremento) {
-        return "Error sintáctico línea " + lineaInstruccion
-                + ": se esperaba '++' o '--'\n";
-    }
-
-    i++; // saltar ++ o --
-
-    // 4. Debe terminar en $
-    if (i >= tokens.size() || tokens.get(i).getTkns() != Tokens.Finalizador) {
-        return "Error sintáctico línea " + lineaInstruccion
-                + ": se esperaba '$' al final\n";
-    }
-
-    i++; // saltar $
-
-    // 5. Aplicar operación
-    if (var instanceof Inter) {
-        Inter interVar = (Inter) var;
-
-        int nuevoValor = interVar.getValor();
-
-        if (op == Tokens.Incremento) {
-            nuevoValor++;
-        } else {
-            nuevoValor--;
-        }
-
-        tablaVariables.put(nombreVar, new Inter(nuevoValor));
-
-        return nombreVar + "=" + nuevoValor + ", sin error semántico\n";
-    }
-
-    if (var instanceof Dec) {
-        Dec decVar = (Dec) var;
-
-        double nuevoValor = decVar.getValor();
-
-        if (op == Tokens.Incremento) {
-            nuevoValor++;
-        } else {
-            nuevoValor--;
-        }
-
-        tablaVariables.put(nombreVar, new Dec(nuevoValor));
-
-        return nombreVar + "=" + nuevoValor + ", sin error semántico\n";
-    }
-
-    return "";
-}
-    
-    
-    
+ 
     // ══════════════════════════════════════════════════════
     //  UTILIDADES
     // ══════════════════════════════════════════════════════
     private boolean esOperador(Tokens tkn) {
         return tkn == Tokens.Suma || tkn == Tokens.Resta
-            || tkn == Tokens.Multiplicacion || tkn == Tokens.Division;
+                || tkn == Tokens.Multiplicacion || tkn == Tokens.Division;
     }
-
+ 
+    private boolean esOperadorNoPermitidoEnCad(Tokens tkn) {
+        return tkn == Tokens.Resta || tkn == Tokens.Multiplicacion || tkn == Tokens.Division;
+    }
+ 
     private String operadorAString(Tokens tkn) {
         switch (tkn) {
             case Suma:           return "+";
@@ -830,7 +982,14 @@ private double leerNumeroDec(int lineaInstruccion) throws Exception {
             default:             return "?";
         }
     }
-
+ 
+    private String tipoDeVariable(TipoDato var) {
+        if (var instanceof Inter) return "inter";
+        if (var instanceof Dec)   return "dec";
+        if (var instanceof Cad)   return "cad";
+        return "desconocido";
+    }
+ 
     private boolean esReservada(String nombre) {
         switch (nombre) {
             case "inter": case "dec": case "cad":
@@ -841,7 +1000,7 @@ private double leerNumeroDec(int lineaInstruccion) throws Exception {
                 return false;
         }
     }
-
+ 
     private void saltarHastaFinalizador() {
         while (i < tokens.size() && tokens.get(i).getTkns() != Tokens.Finalizador) i++;
         if (i < tokens.size()) i++;
