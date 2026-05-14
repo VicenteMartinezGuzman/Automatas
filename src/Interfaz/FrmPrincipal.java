@@ -9,7 +9,13 @@ package Interfaz;
 import codigo.Tokens;
 import codigo.Token;
 import codigo.Lexico;
+import codigo.Lexico;
+import codigo.Lexico;
 import codigo.Sintactico;
+import codigo.Sintactico;
+import codigo.Sintactico;
+import codigo.Token;
+import codigo.Token;
 import static codigo.Tokens.Cad;
 import static codigo.Tokens.Comentarios;
 import static codigo.Tokens.Comillas;
@@ -66,7 +72,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
         completo = new StringBuilder();
         int valor = 0;
 
-        // Encabezado 3 columnas
+        // Encabezado 4 columnas
         String fmt = "%-26s %-15s %-20s %-10s\n";
     completo.append("Tabla de Tokens\n\n");
     completo.append(String.format(fmt, "TOKEN", "LEXEMA", "PATRON", "RESERVADA"));
@@ -98,19 +104,19 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     break;
 
                 case Parentesis_a:
-                    completo.append(String.format(fmt, "(", "(", "[(]","NO"));
+                    completo.append(String.format(fmt, "(", "(", "[(]","SI"));
                     break;
 
                 case Parentesis_c:
-                    completo.append(String.format(fmt, ")", ")", "[)]","NO"));
+                    completo.append(String.format(fmt, ")", ")", "[)]","SI"));
                     break;
 
                 case Llave_a:
-                    completo.append(String.format(fmt, "{", "{", "[{]","NO"));
+                    completo.append(String.format(fmt, "{", "{", "[{]","SI"));
                     break;
 
                 case Llave_c:
-                    completo.append(String.format(fmt, "}", "}", "[}]","NO"));
+                    completo.append(String.format(fmt, "}", "}", "[}]","SI"));
                     break;
 
                 case Suma:
@@ -118,10 +124,10 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     break;
                 
                 case Incremento:
-                    completo.append(String.format(fmt, "++", "++", "[++]","NO"));
+                    completo.append(String.format(fmt, "++", "++", "[++]","SI"));
                     break;
                 case Decremento:
-                    completo.append(String.format(fmt, "--", "--", "[--]","NO"));
+                    completo.append(String.format(fmt, "--", "--", "[--]","SI"));
                     break;
                 case Resta:
                     completo.append(String.format(fmt, "-", "-", "[-]","NO"));
@@ -139,12 +145,12 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     completo.append(String.format(fmt,
                             tok.get(i).getLexema(),
                             tok.get(i).getLexema(),
-                            "[a-zA-Z][a-zA-Z0-9]*",
+                            "/w+//d*",
                             "NO"));
                     break;
                 case Numero:
                     completo.append(String.format(fmt,
-                            tok.get(i).getLexema(),  // ← aquí el cambio
+                            tok.get(i).getLexema(),  
                             tok.get(i).getLexema(),
                             "[0-9]+",
                             "NO"));
@@ -168,7 +174,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     completo.append(String.format(fmt,
                         "//.*",
                         tok.get(i).getLexema(),
-                        "//.*", "NO"));
+                        "//.*", "SI"));
                     break;
 
                 case Linea:
@@ -180,7 +186,7 @@ public class FrmPrincipal extends javax.swing.JFrame {
                     completo.append(String.format(fmt,
                         "<Cadena>",
                         tok.get(i).getLexema(),
-                        "\"[a-zA-Z0-9 ]*\"", "NO"));
+                        "\"/w*\"", "NO"));
                     break;
 
                 default:
